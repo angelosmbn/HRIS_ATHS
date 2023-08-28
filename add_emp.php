@@ -21,6 +21,7 @@
         $gender = $_POST['gender'];
         $employment_status = $_POST['employment_status'];
         $classification = $_POST['classification'];
+        $department = $_POST['department'];
         $date_hired = $_POST['date_hired'];
 
         $currentDate = date("Y-m-d");
@@ -155,6 +156,7 @@
             $sss = $row['sss'];
             $philhealth = $row['philhealth'];
             $pagibig = $row['pag_ibig'];
+            $department = $row['department'];
         }
     }
 
@@ -406,7 +408,6 @@
                         while ($row = $result->fetch_assoc()) {
                             echo '<option value="' . $row['data_value'] . '" ' . (isset($classification) && $classification === $row['data_value'] ? 'selected' : '') . '>' . $row['data_value'] . '</option>';
                         }
-                        $conn->close();
                     ?>
                 </select>
             </select>
@@ -431,7 +432,7 @@
         
         
         <th><input type="address" name="address" id="address" value="<?php echo isset($address) ? $address : '' ?>">
-        <th><input type="text" name="contact" id="contact" value="<?php echo isset($contact) ? $contact : '' ?>" >
+        <th><input type="text" name="contact" id="contact"  maxlength="11" minlength="11" value="<?php echo isset($contact) ? $contact : '' ?>" >
         <th><input type="email" name="email" id="email" value="<?php echo isset($email) ? $email : '' ?>" ><br>
         </tr>
         </table>
@@ -465,7 +466,7 @@
         <th id="thirty"><input type="text" name="prc_number" id="prc_number" value="<?php echo isset($prc_number) ? $prc_number : '' ?>">
         <th id="prc_exp_th"><input type="date" name="prc_exp" id="prc_exp" value="<?php echo isset($prc_exp) ? $prc_exp : '' ?>">
         <th><input type="text" name="position" id="position" value="<?php echo isset($position) ? $position : '' ?>" >
-        <th id="thirty"><input type="text" name="tin" id="tin" value="<?php echo isset($tin) ? $tin : '' ?>"><br>
+        <th id="thirty"><input type="text" name="tin" id="tin" maxlength="11" minlength="11" value="<?php echo isset($tin) ? $tin : '' ?>"><br>
         </tr>
         </table>
 
@@ -473,13 +474,32 @@
         <tr>
         <th><label for="sss">SSS:</label>
         <th><label for="philhealth">PHILHEALTH:</label>
-        <th><label for="pagibig">PAG-IBIG:</label><br>
+        <th><label for="pagibig">PAG-IBIG:</label>
+        <th><label for="pagibig">Department:</label><br>
         </tr>
 
         <tr>
-        <th><input type="text" name="sss" id="sss" value="<?php echo isset($sss) ? $sss : '' ?>">
-        <th><input type="text" name="philhealth" id="philhealth" value="<?php echo isset($philhealth) ? $philhealth : '' ?>">
-        <th><input type="text" name="pagibig" id="pagibig" value="<?php echo isset($pagibig) ? $pagibig : '' ?>"><br>
+        <th><input type="text" name="sss" id="sss" maxlength="12" minlength="12" value="<?php echo isset($sss) ? $sss : '' ?>">
+        <th><input type="text" name="philhealth" id="philhealth" maxlength="14" minlength="14" value="<?php echo isset($philhealth) ? $philhealth : '' ?>">
+        <th><input type="text" name="pagibig" id="pagibig" maxlength="12" minlength="12" value="<?php echo isset($pagibig) ? $pagibig : '' ?>">
+        <th>
+            <select name="department" id="department">
+                <option value="">Department</option>
+                <?php 
+                    $data_type = "department";
+                    $sql = "SELECT * FROM data_values WHERE data_type = ?";
+                    $stmt = $conn->prepare($sql);
+                    $stmt->bind_param("s", $data_type);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                
+                    while ($row = $result->fetch_assoc()) {
+                        echo '<option value="' . $row['data_value'] . '" ' . (isset($department) && $department === $row['data_value'] ? 'selected' : '') . '>' . $row['data_value'] . '</option>';
+                    }
+                    $conn->close();
+                ?>
+            </select>
+        </th><br>
         </tr>
         </table>
 

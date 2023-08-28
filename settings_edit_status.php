@@ -45,6 +45,10 @@
             history($_SESSION['control_number'], "Settings", "Classification Value Deleted");
             echo '<script>window.location="settings_classification_values.php?"</script>';
         }
+        if ($data_type == "department") {
+            history($_SESSION['control_number'], "Settings", "Department Value Deleted");
+            echo '<script>window.location="settings_department_values.php?"</script>';
+        }
         
         exit();
     }
@@ -146,7 +150,10 @@
                 echo "<h1>Edit Employment Status Value</h1>";
             }
             if ($data_type == "classification") {
-                echo "<h1>Edit Classification Record</h1>";
+                echo "<h1>Edit Classification Value</h1>";
+            }
+            if ($data_type == "department") {
+                echo "<h1>Edit Department Value</h1>";
             }
             echo "<br>";
             if ($data_type == "emp_status") {
@@ -154,6 +161,9 @@
             }
             if ($data_type == "classification") {
                 echo '<label for="value">Classification Value:</label>';
+            }
+            if ($data_type == "department") {
+                echo '<label for="value">Department Value:</label>';
             }
         ?>
         
@@ -183,6 +193,12 @@
                     }
                     echo '<script>window.location="settings_classification_values.php?"</script>';
                 }
+                if ($data_type == "department") {
+                    if ($data_value != $value) {
+                        history($_SESSION['control_number'], "Settings", "Department Value Updated");
+                    }
+                    echo '<script>window.location="settings_department_values.php?"</script>';
+                }
                 
                 exit();
             }
@@ -204,6 +220,9 @@
         }
         if ($data_type == "classification") {
             echo "window.location='settings_classification_values.php';";
+        }
+        if ($data_type == "department") {
+            echo "window.location='settings_department_values.php';";
         }
         ?>
     }

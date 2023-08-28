@@ -8,7 +8,6 @@
     }
 
     include 'navbar_hris.php';
-
 ?>
 
 <!DOCTYPE html>
@@ -153,14 +152,14 @@
 
     <form action="" method="POST">
         <h1>
-            <span style="color: black;">Employment Status Values</span>  
+            <span style="color: black;">Department Values</span>  
         </h1>
         <div>
         <button type="button" id="add_record" onclick="toggleInputs()">Add Record</button>
         <button type="button" id="back" onclick="redirectToSettings()">Back</button>
         </div>
         <div id="recordInputs" style="display: none;">
-            <label for="value">Employment Status Value:</label>
+            <label for="value">Enter Department Value:</label>
             <input type="text" name="value" id="value" placeholder="Enter Value" required><br><br>
             <button type="submit" name="submitRecord" id="submitRecord">Save</button>
         </div>
@@ -169,29 +168,29 @@
             <thead>
                 <tr class="fixed-row">
                     <th>#</th>
-                    <th>Employment Status</th>
+                    <th>Department</th>
                 </tr>
             </thead>
 
             <?php
                 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submitRecord'])) {
                     $value = $_POST['value'];
-                    $type = "emp_status";
+                    $type = "department";
                     $stmt = $conn->prepare("INSERT INTO data_values (data_type, data_value) VALUES (?, ?)");
                     $stmt->bind_param("ss", $type, $value);
                     $result = $stmt->execute();  // Execute the statement and store the result
 
                     if ($result) {
                         // Redirect to prevent multiple insertions
-                        history($_SESSION['control_number'], "Settings", "Employment Status Value Added");
-                        echo '<script>window.location="settings_status_values.php"</script>';
+                        history($_SESSION['control_number'], "Settings", "Department Value Added");
+                        echo '<script>window.location="settings_department_values.php"</script>';
                         exit();
                     } else {
                         echo "Error: " . $stmt->error; // Use $stmt->error instead of mysqli_error($conn)
                     }
                 }
 
-                $sql = "SELECT * FROM data_values WHERE data_type = 'emp_status'";
+                $sql = "SELECT * FROM data_values WHERE data_type = 'department'";
                 $result = mysqli_query($conn, $sql);
                 $resultCheck = mysqli_num_rows($result);
                 if ($resultCheck > 0) {
@@ -200,7 +199,11 @@
                     while ($row = mysqli_fetch_assoc($result)) {
                         echo "<tr data-row-id='row-$i'>";
                         echo "<td>" . $i . "</td>";
-                        echo "<td><a href='settings_edit_status.php?value_id=" . $row['value_id'] . "'>" . $row['data_value'] . "</a></td>";
+                        if ($i > 12) {
+                            echo "<td><a href='settings_edit_status.php?value_id=" . $row['value_id'] . "'>" . $row['data_value'] . "</a></td>";
+                        } else {
+                            echo "<td>" . $row['data_value'] . "</td>";
+                        }
                         echo "</tr>";
                         $i++;
                     }

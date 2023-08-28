@@ -88,6 +88,7 @@
         <a href="settings_change_profile.php">Change Profile</a><br>
         <a href="settings_status_values.php">Employment Status Values</a><br>
         <a href="settings_classification_values.php">Classification Values</a><br>
+        <a href="settings_department_values.php">Department Values</a><br>
         <?php 
             if ($_SESSION['access_level'] == 'super admin'){
                 echo "<a href='manage_admin.php'>Manage Admin</a>";

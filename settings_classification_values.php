@@ -199,7 +199,11 @@
                     while ($row = mysqli_fetch_assoc($result)) {
                         echo "<tr data-row-id='row-$i'>";
                         echo "<td>" . $i . "</td>";
-                        echo "<td><a href='settings_edit_status.php?value_id=" . $row['value_id'] . "'>" . $row['data_value'] . "</a></td>";
+                        if ($i > 7) {
+                            echo "<td><a href='settings_edit_status.php?value_id=" . $row['value_id'] . "'>" . $row['data_value'] . "</a></td>";
+                        } else {
+                            echo "<td>" . $row['data_value'] . "</td>";
+                        }
                         echo "</tr>";
                         $i++;
                     }
@@ -223,17 +227,17 @@
             const rows = document.querySelectorAll("tr[data-row-id]");
 
             rows.forEach(row => {
-                row.addEventListener("click", function () {
-                    // Remove the 'highlighted-row' class from all rows
-                    rows.forEach(row => row.classList.remove("highlighted-row"));
-
-                    // Add the 'highlighted-row' class to the clicked row
-                    this.classList.add("highlighted-row");
-                });
-
                 row.addEventListener("dblclick", function () {
-                    // Remove the 'highlighted-row' class from the double-clicked row
-                    this.classList.remove("highlighted-row");
+                    if (this.classList.contains("highlighted-row")) {
+                        // If the row is already highlighted, remove the highlight
+                        this.classList.remove("highlighted-row");
+                    } else {
+                        // Remove the 'highlighted-row' class from all rows
+                        rows.forEach(row => row.classList.remove("highlighted-row"));
+
+                        // Add the 'highlighted-row' class to the clicked row
+                        this.classList.add("highlighted-row");
+                    }
                 });
             });
         });

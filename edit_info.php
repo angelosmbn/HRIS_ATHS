@@ -58,6 +58,7 @@
             $sss = $_POST['sss'];
             $philhealth = $_POST['philhealth'];
             $pagibig = $_POST['pagibig'];
+            $department = $_POST['department'];
 
             
             if ($conn->connect_error) {
@@ -73,6 +74,10 @@
                 $unchanged_msg = '';
                 if ($result->num_rows > 0) {
                     $rows = $result->fetch_assoc();
+                    $old_date_hired = $rows['date_hired'];
+                    if (isset($_POST['resignationDate'])) {
+                        $old_resignation_date = $rows['resignation_date'];
+                    }
                     if (
                         $new_control_number != $rows['control_number'] ||
                         $surname != $rows['surname'] ||
@@ -98,10 +103,39 @@
                         $sss != $rows['sss'] ||
                         $philhealth != $rows['philhealth'] ||
                         $pagibig != $rows['pag_ibig'] ||
+                        $department != $rows['department'] ||
                         (isset($_POST['resigned']) || $resignation_date != $rows['resignation_date']) ||
+                        isset($_POST['unresigned']) ||
                         (isset($_FILES['fileToUpload']) && $_FILES['fileToUpload']['error'] === UPLOAD_ERR_OK)
                     )
                     { //changes were made
+
+                        if ($date_hired != $old_date_hired || isset($_POST['resigned']) || isset($_POST['unresigned']) || ($old_resignation_date != $resignation_date && $resignation_date != "")) {
+                            $sql_years = "SELECT * FROM employees WHERE control_number = ?";
+                            $stmt = $conn->prepare($sql_years);
+                            $stmt->bind_param("s", $control_number);
+                            $stmt->execute();
+                            $result = $stmt->get_result();
+                            $stmt -> close();
+
+                            if ($row = $result->fetch_assoc()) {
+                                if (isset($_POST['resignationDate']) && !isset($_POST['unresigned'])) {
+                                    $resignationDate = $_POST['resignationDate'];
+                                    $resignationDateObj = new DateTime($resignationDate);
+                                    $formattedResignationDate = $resignationDateObj->format('Y-m-d'); // Format the DateTime as needed
+                                } else {
+                                    $date_hired = $row['date_hired']; // Use the actual date_hired value from the database
+                                    $resignationDateObj = new DateTime(); // Set resignation date to date_hired if unresigned
+                                    $formattedResignationDate = $resignationDateObj->format('Y-m-d'); // Format the DateTime as needed
+                                }
+                                
+                                $dateHired = new DateTime($date_hired);
+                                $formattedDateHired = $dateHired->format('Y-m-d'); // Format the DateTime as needed
+                                
+                                $years_service = $dateHired->diff($resignationDateObj)->y;
+                            }
+                        }
+
                         $stmt = $conn->prepare("SELECT * FROM employees WHERE control_number = ?");
                         $stmt->bind_param("s", $control_number);
                         $stmt->execute();
@@ -134,10 +168,11 @@
                                 $tin != $rows['tin'] ||
                                 $sss != $rows['sss'] ||
                                 $philhealth != $rows['philhealth'] ||
-                                $pagibig != $rows['pag_ibig']
+                                $pagibig != $rows['pag_ibig'] ||
+                                $department != $rows['department']
                             ){
-                                $stmt = $conn->prepare("UPDATE employees SET control_number=?, surname=?, name=?, middle_name=?, birthday=?, civil_status=?, gender=?, employment_status=?, classification=?, date_hired=?, years_in_service=?, address=?, contact=?, email=?, course_taken=?, further_studies=?, number_of_units=?, prc_number=?, prc_exp=?, position=?, tin=?, sss=?, philhealth=?, pag_ibig=? WHERE control_number=?");
-                                $stmt->bind_param("ssssssssssissssssssssssss", $new_control_number, $surname, $name, $middle_name, $birthday, $civil_status, $gender, $employment_status, $classification, $date_hired, $years_service, $address, $contact, $email, $course_taken, $further_studies, $number_units, $prc_number, $prc_exp, $position, $tin, $sss, $philhealth, $pagibig, $control_number);
+                                $stmt = $conn->prepare("UPDATE employees SET control_number=?, surname=?, name=?, middle_name=?, birthday=?, civil_status=?, gender=?, employment_status=?, classification=?, date_hired=?, years_in_service=?, address=?, contact=?, email=?, course_taken=?, further_studies=?, number_of_units=?, prc_number=?, prc_exp=?, position=?, tin=?, sss=?, philhealth=?, pag_ibig=?, department=? WHERE control_number=?");
+                                $stmt->bind_param("ssssssssssisssssssssssssss", $new_control_number, $surname, $name, $middle_name, $birthday, $civil_status, $gender, $employment_status, $classification, $date_hired, $years_service, $address, $contact, $email, $course_taken, $further_studies, $number_units, $prc_number, $prc_exp, $position, $tin, $sss, $philhealth, $pagibig, $department, $control_number);
                                 $stmt->execute();
                                 $success_message = "Information Successfully Updated";
                                 $control_number = $new_control_number;
@@ -145,13 +180,32 @@
                                 $type = "Information Updated";
                             }
                         }
+
                         
+                        if (isset($_POST['unresigned'])) {
+                            $resignationDate = Null;
+                            $stmt = $conn->prepare("UPDATE employees SET status = 'active', resignation_date = ?, years_in_service = ? WHERE control_number = ?");
+                            $stmt->bind_param("sss", $resignationDate, $years_service, $control_number);
+                            $stmt->execute();
+                            $affectedRows = $stmt->affected_rows;
+                            $stmt->close();
+                            
+                            if ($affectedRows > 0){
+                                if (isset($type)){
+                                    $type .= ", Unresigned Employee";
+                                }
+                                else{
+                                    $type = "Unresigned Employee";
+                                }
+                                $success_message = "Information Successfully Updated";
+                            }
+                        }
                         if (isset($_POST['resignationDate']) && $resignation_date != "") {
                             $resignationDate = $_POST['resignationDate'];
                             
                             if (isset($_POST['resigned'])){
-                                $stmt = $conn->prepare("UPDATE employees SET status = 'resigned', resignation_date = ? WHERE control_number = ?");
-                                $stmt->bind_param("ss", $resignationDate, $control_number);
+                                $stmt = $conn->prepare("UPDATE employees SET status = 'resigned', resignation_date = ?, years_in_service = ? WHERE control_number = ?");
+                                $stmt->bind_param("sss", $resignationDate, $years_service, $control_number);
                                 $stmt->execute();
                                 $affectedRows = $stmt->affected_rows;
                                 $stmt->close();
@@ -161,13 +215,13 @@
                                         $type .= ", Resignation Updated";
                                     }
                                     else{
-                                        $type = "Resignation Updated";
+                                        $type = "Resignation Updated1";
                                     }
                                     $success_message = "Information Successfully Updated";
                                 }
                             } else {
-                                $stmt = $conn->prepare("UPDATE employees SET status = 'resigned', resignation_date = ? WHERE control_number = ? AND resignation_date != ?");
-                                $stmt->bind_param("sss", $resignationDate, $control_number, $resignationDate);
+                                $stmt = $conn->prepare("UPDATE employees SET status = 'resigned', resignation_date = ?, years_in_service = ? WHERE control_number = ? AND resignation_date != ?");
+                                $stmt->bind_param("ssss", $resignationDate, $years_service, $control_number, $resignationDate);
                                 $stmt->execute();
                                 $affectedRows = $stmt->affected_rows;
                                 $stmt->close();
@@ -177,12 +231,14 @@
                                         $type .= ", Resignation Updated";
                                     }
                                     else{
-                                        $type = "Resignation Updated";
+                                        $type = "Resignation Updated2";
                                     }
                                     $success_message = "Information Successfully Updated";
                                 }
                             }
-                        }                    
+                        }
+                        
+                        
         
                         if (isset($_FILES['fileToUpload']) && $_FILES['fileToUpload']['error'] === UPLOAD_ERR_OK) {
                             $path = "images/";
@@ -285,6 +341,10 @@
         $sss = $row['sss'];
         $philhealth = $row['philhealth'];
         $pagibig = $row['pag_ibig'];
+        $department = $row['department'];
+
+        $dateHired = new DateTime($date_hired);
+        $formattedDateHired = $dateHired->format('Y-m-d');
     }
 
 ?>
@@ -431,7 +491,7 @@
             background-color: #9c0402;
         }
 
-        #resigned {
+        #resigned, #unresigned {
             width: 20px;
             height: 20px;
             margin-left: 10px;
@@ -556,7 +616,6 @@
                                     while ($row = $result->fetch_assoc()) {
                                         echo '<option value="' . $row['data_value'] . '" ' . (isset($classification) && $classification === $row['data_value'] ? 'selected' : '') . '>' . $row['data_value'] . '</option>';
                                     }
-                                    $conn->close();
                                 ?>
                             </select>
                         </th>
@@ -574,7 +633,7 @@
 
                     <tr>  
                         <th><input type="address" name="address" id="address" value="<?php echo isset($address) ? $address : '' ?>">
-                        <th><input type="text" name="contact" id="contact" value="<?php echo isset($contact) ? $contact : '' ?>" >
+                        <th><input type="text" name="contact" id="contact" maxlength="11" minlength="11" value="<?php echo isset($contact) ? $contact : '' ?>" >
                         <th><input type="email" name="email" id="email" value="<?php echo isset($email) ? $email : '' ?>" ><br>
                     </tr>
                 </table>
@@ -605,7 +664,7 @@
                         <th id="thirty"><input type="text" name="prc_number" id="prc_number" value="<?php echo isset($prc_number) ? $prc_number : '' ?>">
                         <th id="prc_exp_th"><input type="date" name="prc_exp" id="prc_exp" value="<?php echo isset($prc_exp) ? $prc_exp : '' ?>">
                         <th><input type="text" name="position" id="position" value="<?php echo isset($position) ? $position : '' ?>" >
-                        <th id="thirty"><input type="text" name="tin" id="tin" value="<?php echo isset($tin) ? $tin : '' ?>"><br>
+                        <th id="thirty"><input type="text" name="tin" id="tin" maxlength="11" minlength="11" value="<?php echo isset($tin) ? $tin : '' ?>"><br>
                     </tr>
                 </table>
 
@@ -613,35 +672,67 @@
                     <tr>
                         <th><label for="sss">SSS:</label>
                         <th><label for="philhealth">PHILHEALTH:</label>
-                        <th><label for="pagibig">PAG-IBIG:</label><br>
+                        <th><label for="pagibig">PAG-IBIG:</label>
+                        <th><label for="pagibig">Department:</label><br>
                     </tr>
 
                     <tr>
-                        <th><input type="text" name="sss" id="sss" value="<?php echo isset($sss) ? $sss : '' ?>">
-                        <th><input type="text" name="philhealth" id="philhealth" value="<?php echo isset($philhealth) ? $philhealth : '' ?>">
-                        <th><input type="text" name="pagibig" id="pagibig" value="<?php echo isset($pagibig) ? $pagibig : '' ?>"><br>
+                        <th><input type="text" name="sss" id="sss" maxlength="12" minlength="12" value="<?php echo isset($sss) ? $sss : '' ?>">
+                        <th><input type="text" name="philhealth" id="philhealth" maxlength="14" minlength="14" value="<?php echo isset($philhealth) ? $philhealth : '' ?>">
+                        <th><input type="text" name="pagibig" id="pagibig" maxlength="12" minlength="12" value="<?php echo isset($pagibig) ? $pagibig : '' ?>">
+                        <th>
+                            <select name="department" id="department">
+                                <option value="">Department</option>
+                                <?php 
+                                    $data_type = "department";
+                                    $sql = "SELECT * FROM data_values WHERE data_type = ?";
+                                    $stmt = $conn->prepare($sql);
+                                    $stmt->bind_param("s", $data_type);
+                                    $stmt->execute();
+                                    $result = $stmt->get_result();
+                                
+                                    while ($row = $result->fetch_assoc()) {
+                                        echo '<option value="' . $row['data_value'] . '" ' . (isset($department) && $department === $row['data_value'] ? 'selected' : '') . '>' . $row['data_value'] . '</option>';
+                                    }
+                                    $conn->close();
+                                ?>
+                            </select>
+                        </th><br>
                     </tr>
                 </table>
 
                 <table>
                     <tr>
                         <?php 
-                            if (isset($emp_status) && $emp_status == 'active') {
-                                echo '<th id="resignation-col">
-                                    <div class="input-container">
-                                        <label for="resigned">Resigned</label>
-                                        <input type="checkbox" name="resigned" id="resigned" onchange="toggleResignationDate()">
+                        if (isset($emp_status) && $emp_status == 'active') {
+                            echo '<th id="resignation-col">
+                                <div class="input-container">
+                                    <label for="resigned">Resigned</label>
+                                    <input type="checkbox" name="resigned" id="resigned" onchange="toggleResignationDate()"';
 
-                                        <div id="resignationDateContainer" class="hidden">
-                                            <label for="resignationDate" id="resignation-label">Resignation Date:</label>
-                                            <input type="date" name="resignationDate" id="resignationDate" value="' . (isset($resignation_date) ? $resignation_date : '') . '">
-                                        </div>
+                            // Add 'checked' attribute if $resigned is set
+                            if (isset($resigned) && $resigned == true) {
+                                echo ' checked';
+                            }
+
+                            echo '>
+                                    <div id="resignationDateContainer" class="hidden">
+                                        <label for="resignationDate" id="resignation-label">Resignation Date:</label>
+                                        <input type="date" name="resignationDate" id="resignationDate"  min="' . $formattedDateHired . '" value="' . (isset($resignation_date) ? $resignation_date : '') . '">
                                     </div>
-                                </th>';
-                            }
-                            else {
-                                echo '<th>Resignation Date: <input type="date" name="resignationDate" id="resignationDate" value="' . (isset($resignation_date) ? $resignation_date : '') . '"></th>';
-                            }
+                                </div>
+                            </th>';
+                        } else {
+                            echo '<th><label for="unresigned">Unresigned</label>';
+                            echo '<input type="checkbox" name="unresigned" id="unresigned" onchange="removeResignationDate()"><br>';
+                            echo '
+                                    <div id="resignationDateContainer" class="">
+                                        <label for="resignationDate" id="resignation-label">Resignation Date:</label>
+                                        <input type="date" name="resignationDate" id="resignationDate"  min="' . $formattedDateHired . '" value="' . (isset($resignation_date) ? $resignation_date : '') . '">
+                                    </div>
+                                </div>
+                            </th>';
+                        }
                         ?>
 
                         <th>Image:
@@ -706,9 +797,24 @@
       if (resignedCheckbox.checked) {
         resignationDateContainer.classList.remove('hidden');
         resignationDateInput.required = true;
+        resignationDateInput.value = '';
       } else {
         resignationDateContainer.classList.add('hidden');
         resignationDateInput.required = false;
+      }
+    }
+
+    function removeResignationDate() {
+      const resignationDateContainer = document.getElementById('resignationDateContainer');
+      const unresignedCheckbox = document.getElementById('unresigned');
+      const resignationDateInput = document.getElementById('resignationDate');
+
+      if (unresignedCheckbox.checked) {
+        resignationDateContainer.classList.add('hidden');
+        resignationDateInput.required = false;
+      } else {
+        resignationDateContainer.classList.remove('hidden');
+        resignationDateInput.required = true; 
       }
     }
 
@@ -734,7 +840,7 @@
 
     // Function to disable input fields
     function disableInputFields() {
-        var inputFields = document.querySelectorAll('#control_number, #surname, #name, #middle_name, #birthday, #civil_status, #gender, #employment_status, #classification, #date_hired, #years_service, #address, #contact, #email, #course_taken, #further_studies, #number_units, #prc_number, #prc_exp, #position, #tin, #sss, #philhealth, #pagibig, #fileToUpload, #resigned, #resignationDate');
+        var inputFields = document.querySelectorAll('#control_number, #surname, #name, #middle_name, #birthday, #civil_status, #gender, #employment_status, #classification, #date_hired, #years_service, #address, #contact, #email, #course_taken, #further_studies, #number_units, #prc_number, #prc_exp, #position, #tin, #sss, #philhealth, #pagibig, #fileToUpload, #resigned, #resignationDate, #department, #unresigned');
 
         inputFields.forEach(function(input) {
             input.disabled = true;

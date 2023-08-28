@@ -190,6 +190,7 @@
         margin: auto; /* Center horizontally */
         border: 0.5px solid black;
         max-height: 600px;
+        overflow: auto;
     }
 
     #information {
