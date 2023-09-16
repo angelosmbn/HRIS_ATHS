@@ -8,6 +8,7 @@
     }
     
     include 'navbar_hris.php';
+    change_default();
 
     if (isset($_GET['value_id'])) {
         $value_id = $_GET['value_id'];   
@@ -29,28 +30,41 @@
     }
 
     if (isset($_POST['deleteRecord'])) {
-        $sql = "DELETE FROM data_values WHERE value_id = ?";
+        $sql = "SELECT * FROM employees WHERE department = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("s", $value_id);
+        $stmt->bind_param("s", $data_value);
         $stmt->execute();
-        $stmt->close();
+        $result = $stmt->get_result();
+        $numRows = $result->num_rows;
 
-        
-        // Redirect to the appropriate page after deletion
-        if ($data_type == "emp_status") {
-            history($_SESSION['control_number'], "Settings", "Employment Status Value Deleted");
-            echo '<script>window.location="settings_status_values.php?"</script>';
+        if ($numRows == 0) {
+            $sql = "DELETE FROM data_values WHERE value_id = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("s", $value_id);
+            $stmt->execute();
+            $stmt->close();
+    
+            
+            // Redirect to the appropriate page after deletion
+            if ($data_type == "emp_status") {
+                history($_SESSION['control_number'], "Settings", "Employment Status Value Deleted");
+                echo '<script>window.location="settings_status_values.php?"</script>';
+            }
+            if ($data_type == "classification") {
+                history($_SESSION['control_number'], "Settings", "Classification Value Deleted");
+                echo '<script>window.location="settings_classification_values.php?"</script>';
+            }
+            if ($data_type == "department") {
+                history($_SESSION['control_number'], "Settings", "Department Value Deleted");
+                echo '<script>window.location="settings_department_values.php?"</script>';
+            }
+            
+            exit();
         }
-        if ($data_type == "classification") {
-            history($_SESSION['control_number'], "Settings", "Classification Value Deleted");
-            echo '<script>window.location="settings_classification_values.php?"</script>';
+        else {
+            echo "<script>alert('Cannot delete this record. There are employees assigned to this department.');</script>";
         }
-        if ($data_type == "department") {
-            history($_SESSION['control_number'], "Settings", "Department Value Deleted");
-            echo '<script>window.location="settings_department_values.php?"</script>';
-        }
-        
-        exit();
+
     }
 ?>
 
@@ -82,7 +96,7 @@
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         margin: auto; /* Center horizontally */
         border: 0.5px solid black;
-        max-height: 600px;
+        max-height: 700px;
         overflow: auto;
     }
 

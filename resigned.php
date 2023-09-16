@@ -6,6 +6,7 @@ if (!isset($_SESSION['user'])) {
     exit();
 }
 include 'navbar_hris.php';
+change_default();
 ?>
 
 <!DOCTYPE html>
@@ -30,7 +31,7 @@ include 'navbar_hris.php';
             border-radius: 5px 0 0 0;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             margin: 20px auto 0;
-            max-height: 700px;
+            max-height: 750px;
             overflow-y: auto;
             width: 95%;grey
         }
@@ -48,6 +49,11 @@ include 'navbar_hris.php';
         .container::-webkit-scrollbar-track {
             background-color: transparent;
         }
+
+        .container tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        
         table {
             border-collapse: collapse;
             width: auto;
@@ -181,7 +187,7 @@ include 'navbar_hris.php';
             <thead>
             <tr class="fixed-row">
             <th>#</th>
-            <th>Control Number</th><th>Resignation Date</th><th>Surname</th><th>Name</th><th>Middle Name</th>
+            <th>Control Number</th><th>Resignation Date</th><th>Surname</th><th>Name</th><th>Middle Name</th><th>Suffix</th>
             <th>Birthday</th><th>Civil Status</th><th>Gender</th><th>Employment Status</th>
             <th>Classification</th><th>Date Hired</th><th>Years in Service</th><th>Address</th>
             <th>Contact Number</th><th>Email Address</th><th>Course Taken</th><th>Further Studies</th>
@@ -225,6 +231,7 @@ include 'navbar_hris.php';
                         echo "<td>{$row['surname']}</td>";
                         echo "<td>{$row['name']}</td>";
                         echo "<td>{$row['middle_name']}</td>";
+                        echo "<td>{$row['suffix']}</td>";
                         echo "<td>{$row['birthday']}</td>";
                         echo "<td>{$row['civil_status']}</td>";
                         echo "<td>{$row['gender']}</td>";
@@ -277,17 +284,23 @@ include 'navbar_hris.php';
         document.addEventListener("DOMContentLoaded", function () {
             const rows = document.querySelectorAll("tr[data-row-id]");
 
-            rows.forEach(row => {
+            rows.forEach((row) => {
                 row.addEventListener("dblclick", function () {
                     if (this.classList.contains("highlighted-row")) {
                         // If the row is already highlighted, remove the highlight
                         this.classList.remove("highlighted-row");
+                        this.style.backgroundColor = "";
                     } else {
                         // Remove the 'highlighted-row' class from all rows
-                        rows.forEach(row => row.classList.remove("highlighted-row"));
+                        rows.forEach((r) => {
+                            r.classList.remove("highlighted-row");
+                            r.style.backgroundColor = "";
+                        });
 
                         // Add the 'highlighted-row' class to the clicked row
                         this.classList.add("highlighted-row");
+                        // Change background color to blue for double-clicked row
+                        this.style.backgroundColor = "#5cabff";
                     }
                 });
             });

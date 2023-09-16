@@ -10,7 +10,7 @@ if (isset($_SESSION['user'])) {
 $error_message = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST['username'];
+    $username = sha1($_POST['username']);
     $password = sha1($_POST['password']);
     $super_admin = "super admin";
     $admin_access = "admin";
@@ -50,7 +50,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     if ($result_user->num_rows > 0) {
                         $user = $result_user->fetch_assoc();
                         $_SESSION['user'] = $user;
-                        header("Location: User_home.php");
+                        header("Location: Admin_home_hris.php");
                         exit();
                     } else {
                         $query = "SELECT status FROM user WHERE username = '{$username}' AND password = '{$password}'";
@@ -174,6 +174,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <form class="form" method="POST" action="">
         <p class="form-title">Sign in to your account</p>
         <div class="input-container">
+            
             <input type="text" name="username" placeholder="Enter Username" required>
             <span></span>
         </div>

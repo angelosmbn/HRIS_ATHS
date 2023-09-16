@@ -9,6 +9,7 @@ if (!isset($_SESSION['user'])) {
 
 // Include the navigation bar
 include 'navbar_hris.php';
+change_default();
 ?>
 
 <!DOCTYPE html>
@@ -34,7 +35,7 @@ include 'navbar_hris.php';
             border-radius: 5px 0 0 0;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             margin: 20px auto 0;
-            max-height: 700px;
+            max-height: 750px;
             overflow-y: auto;
             width: 95%;
         }
@@ -52,6 +53,9 @@ include 'navbar_hris.php';
         .container::-webkit-scrollbar-track {
             background-color: transparent;
         }
+        .container tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
 
         table {
             border-collapse: collapse;
@@ -63,7 +67,7 @@ include 'navbar_hris.php';
             display: relative;
             text-align: left;
             padding: 8px;
-            border: 1px solid #ccc;
+            border: 1px solid black;
             white-space: nowrap;
             height: auto;
         }
@@ -144,8 +148,11 @@ include 'navbar_hris.php';
             width: 203px;
         }
 
-        #years_service{
-            width: 55px;
+        #years_service, #years_service1{
+            width: 56px;
+        }
+        #years_service1 {
+            margin-left: 0px;
         }
 
         #civil_status{
@@ -223,9 +230,12 @@ include 'navbar_hris.php';
                         </td>
 
                         <td>
-                            <label for="years_service">Years in Service:</label>
-                            <input type="number" name="years_service" id="years_service" placeholder="Years" min="0"
+                            <label for="years_service">Years:</label>
+                            <input type="number" name="years_service" id="years_service" placeholder="From" min="0"
                             value="<?php echo isset($_POST['years_service']) ? $_POST['years_service'] : '' ?>">
+                            -
+                            <input type="number" name="years_service1" id="years_service1" placeholder="To" min="0"
+                            value="<?php echo isset($_POST['years_service1']) ? $_POST['years_service1'] : '' ?>">
                         </td>
 
                         <td>
@@ -246,6 +256,7 @@ include 'navbar_hris.php';
                             <th>Surname</th>
                             <th>Name</th>
                             <th>Middle Name</th>
+                            <th>Suffix</th>
                             <th>Birthday</th>
                             <th>Civil Status</th>
                             <th>Gender</th>
@@ -312,11 +323,21 @@ include 'navbar_hris.php';
                             $sql .= " AND employment_status LIKE '%$search_employment_status%'";
                         }
                         
-                        if (isset($_POST['years_service'])) {
+                        if (isset($_POST['years_service']) && (!empty($_POST['years_service'] || $_POST['years_service'] == 0)) && !(isset($_POST['years_service1']) && !empty($_POST['years_service1']))) {
                             $search_years_service = $_POST['years_service'];
 
                             if (!empty($_POST['years_service']) || $search_years_service == 0){
                                 $sql .= " AND years_in_service = $search_years_service";
+                            }
+                        }
+                        else{
+                            if (isset($_POST['years_service']) && !empty($_POST['years_service']) && isset($_POST['years_service1']) && !empty($_POST['years_service1'])) {
+                                $search_years_service = $_POST['years_service'];
+                                $search_years_service1 = $_POST['years_service1'];
+
+                                if (!empty($_POST['years_service']) || $search_years_service == 0){
+                                    $sql .= " AND years_in_service BETWEEN $search_years_service AND $search_years_service1";
+                                }
                             }
                         }
 
@@ -334,10 +355,13 @@ include 'navbar_hris.php';
                             while($row = mysqli_fetch_assoc($result)) {
                                     echo "<tr data-row-id='row-$i'>";
                                         echo "<td> $i </td>";
+                                        //echo "<td>{$row['vl']}</td>";
+                                        //echo "<td>{$row['sl']}</td>";
                                         echo '<td><a href="information.php?control=' . $row['control_number'] . '">' . $row['control_number'] . '</a></td>';
                                         echo "<td>{$row['surname']}</td>";
                                         echo "<td>{$row['name']}</td>";
                                         echo "<td>{$row['middle_name']}</td>";
+                                        echo "<td>{$row['suffix']}</td>";
                                         echo "<td>{$row['birthday']}</td>";
                                         echo "<td>{$row['civil_status']}</td>";
                                         echo "<td>{$row['gender']}</td>";
@@ -384,6 +408,7 @@ include 'navbar_hris.php';
             document.getElementById("civil_status").value = "";
             document.getElementById("employment_status").value = "";
             document.getElementById("years_service").value = "";
+            document.getElementById("years_service1").value = "";
             document.getElementById("position").value = "";
             // Submit the form to show unfiltered data
             document.forms[0].submit();
@@ -393,19 +418,45 @@ include 'navbar_hris.php';
         document.addEventListener("DOMContentLoaded", function () {
             const rows = document.querySelectorAll("tr[data-row-id]");
 
-            rows.forEach(row => {
+            rows.forEach((row) => {
                 row.addEventListener("dblclick", function () {
                     if (this.classList.contains("highlighted-row")) {
                         // If the row is already highlighted, remove the highlight
                         this.classList.remove("highlighted-row");
+                        this.style.backgroundColor = "";
                     } else {
                         // Remove the 'highlighted-row' class from all rows
-                        rows.forEach(row => row.classList.remove("highlighted-row"));
+                        rows.forEach((r) => {
+                            r.classList.remove("highlighted-row");
+                            r.style.backgroundColor = "";
+                        });
 
                         // Add the 'highlighted-row' class to the clicked row
                         this.classList.add("highlighted-row");
+                        // Change background color to blue for double-clicked row
+                        this.style.backgroundColor = "#5cabff";
                     }
                 });
+            });
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            // Get references to the input fields
+            const yearsServiceInput = document.getElementById("years_service");
+            const yearsService1Input = document.getElementById("years_service1");
+
+            // Add an event listener to the yearsServiceInput
+            yearsServiceInput.addEventListener("input", function () {
+                // Get the value of yearsServiceInput
+                const yearsServiceValue = parseInt(yearsServiceInput.value);
+
+                // Update the min attribute of yearsService1Input
+                yearsService1Input.min = yearsServiceValue;
+                
+                // If the value of yearsService1Input is less than the new min, update its value
+                if (parseInt(yearsService1Input.value) < yearsServiceValue) {
+                    yearsService1Input.value = yearsServiceValue;
+                }
             });
         });
 

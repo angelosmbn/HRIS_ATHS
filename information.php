@@ -7,11 +7,18 @@
         exit();
     }
 
-    include 'navbar_hris.php';
+    include_once 'navbar_hris.php';
+    change_default();
 
     // Check if 'control' parameter is provided in the URL
     if (isset($_GET['control'])) {
         $control_number = $_GET['control'];
+    }else{
+        echo '<script>
+            alert("Please Select Employee.");
+            window.location="cur_emp.php";
+            </script>';
+        exit;
     }
 
     // Check if the delete form is submitted
@@ -46,6 +53,24 @@
         $stmt->execute();
         $stmt->close();
 
+        $sql = "DELETE FROM attendance WHERE control_number = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("s", $control_number);
+        $stmt->execute();
+        $stmt->close();
+
+        $sql = "DELETE FROM service_record WHERE control_number = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("s", $control_number);
+        $stmt->execute();
+        $stmt->close();
+
+        $sql = "DELETE FROM user WHERE control_number = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("s", $control_number);
+        $stmt->execute();
+        $stmt->close();
+
         // Redirect based on employee status
         $type = "Employee Deleted";
         history($_SESSION['control_number'], $control_number, $type);
@@ -56,6 +81,58 @@
             echo '<script>window.location.href = "resigned.php";</script>';
         }
     }
+
+    function getMonths() {
+        global $conn;
+        $query = "SELECT * FROM attendance_year";
+        $stmt = $conn->prepare($query);
+        $stmt->execute();
+        
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $months = explode(", ", $row['months']);
+        }
+
+        return $months;
+    }
+
+    function getTotal($conn, $control_number) {
+        $months = getMonths();
+        $totalData = array(
+            'absent' => array(),
+            'late' => array(),
+            'undertime' => array()
+        );
+    
+        foreach ($months as $month) {
+            $sql = "SELECT SUM(absent) AS total_absent, SUM(late) AS total_late, SUM(undertime) AS total_undertime 
+                    FROM attendance WHERE control_number = ? AND month = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("ss", $control_number, $month);
+            $stmt->execute();
+            $innerResult = $stmt->get_result();
+    
+            if ($innerResult && $innerResult->num_rows > 0) {
+                $attendance = $innerResult->fetch_assoc();
+    
+                $totalData['absent'][$month] = $attendance['total_absent'];
+                $totalData['late'][$month] = $attendance['total_late'];
+                $totalData['undertime'][$month] = $attendance['total_undertime'];
+            }
+            
+            $stmt->close();
+        }
+    
+        return $totalData;
+    }    
+
+    $totalData = getTotal($conn, $control_number);
+    $totalAbsent = array_sum($totalData['absent']);
+    $totalLate = array_sum($totalData['late']);
+    $totalUndertime = array_sum($totalData['undertime']);
+
 ?>
 
 <!DOCTYPE html>
@@ -82,12 +159,13 @@
             align-items: center;
             padding: 1rem;
             width: 60%;
-            height: 1200px;
+            height: 900px;
             border-radius: 0.5rem;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            margin: auto;
-            border: 0.5px solid black;
+            margin-left: 420px;
+            border: 1px solid black;
             overflow: auto;
+            margin-top: -40px;
         }
 
         a {
@@ -98,39 +176,44 @@
             border-collapse: collapse;
             width: 100%;
             font-size: 16px;
-            
+            margin-top: -1rem;
         }
 
         th, td {
             display: relative;
             text-align: left;
             padding: 8px;
-            border: 1px solid #ddd;
+            border: 1px solid black;
             white-space: nowrap;
             height: 0px;
         }
+        td {
+            vertical-align: top; /* Align text to the top vertically */
+        }
+        #personal_td {
+            vertical-align: center; 
+        }
 
         .profile1 {
-            min-width: 200px;
-            min-height: 200px;
-            max-width: 200px;
-            max-height: 200px;
-            border-radius: 50%;
+            min-width: 230px;
+            min-height: 230px;
+            max-width: 230px;
+            max-height: 230px;
+            border-radius: 10px;
             object-fit: cover;
-            margin-bottom: 20px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
 
         .center_profile {
             text-align: center;
-            max-width: 200px;
+            
         }
 
-        .name {
-            font-size: 40px;
+        .name { //!unused 
+            font-size: 0px;
         }
 
-        .details {
+        .details { //!unused
             font-size: 16px;
             margin-top: 20px;
             text-align: center;
@@ -148,6 +231,7 @@
             font-size: 16px;
             cursor: pointer;
             width: 170px;
+            margin-bottom: -100px;
         }
         form {
             display: inline-block;
@@ -179,6 +263,35 @@
         #delete:hover {
             background-color: #9c0402;
         }
+
+        table.attendance {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        table.attendance th, table.attendance td {
+            display: relative;
+            text-align: center;
+            padding: 1px 4px 1px 4px;
+            border: 1px solid black;
+            white-space: nowrap;
+            height: auto;
+        }
+        table.attendance th {
+            background: bisque;
+            text-align: center;
+        }
+        #address {
+            min-width: 450px;
+            resize: none;
+            border: none;
+            font-size: 16px;
+        }
+
+        h2 {
+            font-weight: 550;
+        }
     </style>
 </head>
 <body>
@@ -196,71 +309,159 @@
                         while ($row = $result->fetch_assoc()) {
                             $user = $row;
                             $employeeStatus = $row['status'];
-                            $fontColor = ($employeeStatus === 'active') ? 'green' : 'red';
-                            $fullName = $row['surname'] . ", " . $row['name'] . " " . $row['middle_name'];
+                            $fontColor = ($employeeStatus === 'active') ? 'black' : 'red';
+                            $fullName = $row['surname'] . ", " . $row['name'];
+                            if ($row['middle_name'] != "") {
+                                $fullName .= " " . $row['middle_name'];
+                            }
+                            if ($row['suffix'] != "") {
+                                $fullName .= " " . $row['suffix'];
+                            }
 
-                            echo '<tr><td class="center_profile" colspan="2"><img src="images/' . $row['image'] . '" alt="avatar" class="profile1">';
-                            echo "<h1>";
-                            echo "<span style='color: $fontColor'>$fullName</span>";
-                            echo "</h1></td></tr><tr><td colspan='2'>";
-                            echo "<h2>Personal Information</h2>";
-                            echo "Control Number: " . $row['control_number'] . "<br>";
+                            echo '<td class="center_profile"><img src="images/' . $row['image'] . '" alt="avatar" class="profile1"><br>';
+                            
+                            echo "<span style='font-size: 16px;'>" . $row['control_number'] . "</span><br>";
+                            echo "</td><td id='personal_td'>";
+                            
+                            echo "<span style='color: $fontColor; font-size: 30px; font-weight: bold;'>$fullName</span><br>";
                             echo "Birthday: " . $row['birthday'] . "<br>";
                             echo "Civil Status: " . $row['civil_status'] . "<br>";
                             echo "Gender: " . $row['gender'] . "<br>";
-                            echo "Address: " . $row['address'] . "<br>";
+                            echo "Address:<br>";
+                            echo '<textarea name="address" id="address" readonly>' . htmlspecialchars($row['address']) . '</textarea><br>';
+
                             echo "Contact: " . $row['contact'] . "<br>";
                             echo "Email: " . $row['email'] . "<br>";
-                            echo "</td></tr><tr><td colspan='2'>";
+                            echo "</td><tr><td>";
 
                             echo "<h2>Employment Information</h2>";
-                            echo "<p>";
-                            echo "Employment Status: ";
                             if ($employeeStatus === 'resigned') {
+                                echo "<span style='color: red'> RESIGNED on " . $row['resignation_date'] . "</span><br>";
+                                echo "Employment Status: ";
                                 echo $row['employment_status'];
-                                echo "<span style='color: red'> RESIGNED on " . $row['resignation_date'] . "</span>";
                             } else {
+                                echo "Employment Status: ";
                                 echo $row['employment_status'];
                             }
-                            echo "</p>";
-                            echo "Classification: " . $row['classification'] . "<br>";
+                            
+                            
+                        
+                            echo "<br>Classification: " . $row['classification'] . "<br>";
+                            echo "Classification: " . $row['department'] . "<br>";
+                            echo "Position: " . $row['position'] . "<br>";
                             echo "Date Hired: " . $row['date_hired'] . "<br>";
                             echo "Years in Service: " . $row['years_in_service'] . "<br>";
-                            echo "</td></tr><td colspan='2'>";
+                            echo "</td><td>";
 
+                            
                             echo "<h2>Educational Background</h2>";
                             echo "Course Taken: " . $row['course_taken'] . "<br>";
                             echo "Further Studies: " . $row['further_studies'] . "<br>";
                             echo "Number of Units: " . $row['number_of_units'] . "<br>";
                             echo "PRC Number: " . $row['prc_number'] . "<br>";
                             echo "PRC Expiration: " . $row['prc_exp'] . "<br>";
-                            echo "Position: " . $row['position'] . "<br>";
-                            echo "</td></tr><tr><td colspan='2'>";
+                            echo "</td></tr><td>";
+
+                            echo "<h2>Attendance</h2>";
+                            echo "Total Absent: " . $totalAbsent . "<br>";
+                            echo "Total Late: " . $totalLate . "<br>";
+                            echo "Total Undertime: " . $totalUndertime . "<br>";
+                            echo "Total Leave: " . $row['vl'] + $row['sl'] . "<br>";
+                            echo "Remaining Leave: " . (($row['remaining_leave'] > 0) ? $row['remaining_leave'] : (($row['remaining_leave'] == 0) ? abs($row['remaining_leave']) : "(" . $row['remaining_leave'] . ")")) . "<br>";
+                            echo "</td><td>";
 
                             echo "<h2>Other Information</h2>";
                             echo "TIN: " . $row['tin'] . "<br>";
                             echo "SSS: " . $row['sss'] . "<br>";
                             echo "PHILHEALTH: " . $row['philhealth'] . "<br>";
                             echo "PAG-IBIG: " . $row['pag_ibig'] . "<br>";
-                            echo "</td></tr>";
+                            echo "</td>";
+
+                            
                         }
+                        
                     }
                 ?>
             </tr>
         </table>
-        
         <?php 
-            echo "<div>";
-            if ($user['status'] == 'resigned') {
+            $months = getMonths();
+            $length = count($months) + 1;
+            $lastMonth = end($months);
+            $firstMonth = reset($months);
+            $i = 0;
+
+            $totalAbsent = 0;
+            $totalLate = 0;
+            $totalUndertime = 0;
+            echo "<table class='attendance'>";
+            echo "<tr><th colspan='$length'>Attendance</th></tr>";
+            echo "<th></th>";
+            foreach ($months as $month) {
+                $abbreviatedMonth = substr($month, 0, 3); // Extract the first 3 characters of the month
+                echo "<th>$abbreviatedMonth</th>";
+            }            
+            echo "<tr>";
+            for ($i = 0; $i < 3; $i++) {
+                foreach ($months as $month) {
+                    if ($month == $firstMonth) {
+                        if ($i == 0) {
+                            echo "<th>Absent</th>";
+                        }
+                        elseif ($i == 1) {
+                            echo "</tr><tr><th>Late</th>";
+                        }
+                        elseif ($i == 2) {
+                            echo "</tr><tr><th>Undertime</th>";
+                        }
+                    }
+                    $sql = "SELECT * FROM attendance WHERE control_number = ? AND month = ?";
+                    $stmt = $conn->prepare($sql);
+                    $stmt->bind_param("ss", $control_number, $month);
+                    $stmt->execute();
+                    $innerResult = $stmt->get_result();
+                    $stmt->close();
+
+                    if ($innerResult && $innerResult->num_rows > 0) {
+                        $attendance = $innerResult->fetch_assoc();
+                        if ($attendance['month'] == $month && $i == 0) {
+                            echo "<td>" . $attendance['absent'] . "</td>";
+                            $totalAbsent += $attendance['absent'];
+                        }
+                        if ($attendance['month'] == $month && $i == 1) {
+                            echo "<td>" . $attendance['late'] . "</td>";
+                            $totalLate += $attendance['late'];
+                        }
+                        if ($attendance['month'] == $month && $i == 2) {
+                            echo "<td>" . $attendance['undertime'] . "</td>";
+                            $totalUndertime += $attendance['undertime'];
+                        }
+                        
+                    }
+                    else {
+                        echo "<td>0</td>";
+                    }
+                }
+            }
+            echo "</table>";
+        ?>
+        <?php 
+
+            echo "<div style='margin-top: 20px;'>";
+            if ($user['status'] == 'resigned' && $_SESSION['access_level'] != 'employee') {
                 echo '<a class="submit-button" href="resigned.php" id="back">Back</a>';
-            } elseif ($user['status'] == 'active') {
+            } elseif ($user['status'] == 'active' && $_SESSION['access_level'] != 'employee') {
                 echo '<a class="submit-button" href="cur_emp.php" id="back">Back</a>';
             }
-            echo '<a class="submit-button" href="edit_info.php?control=' . $user['control_number'] . '">' . 'Edit Information</a>';
+            if ($_SESSION['access_level'] != 'employee'){
+                echo '<a class="submit-button" href="edit_info.php?control=' . $user['control_number'] . '">' . 'Edit Information</a>';
+            }
             echo '<a class="submit-button" href="add_service_record.php?control=' . $user['control_number'] . '">' . 'Service Record</a>';
             echo '<form method="post" onsubmit="return confirm(\'Are you sure you want to delete this record?\')">';
             echo '<input type="hidden" name="employeeStatus" value="' . $employeeStatus . '">';
+            if ($_SESSION['access_level'] != 'employee'){
             echo '<input type="submit" class="submit-button" name="delete" id="delete" value="Delete">';
+            }
             echo '</form>';
             echo "</div>";
         ?>

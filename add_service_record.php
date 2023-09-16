@@ -8,7 +8,8 @@
     }
 
     include 'navbar_hris.php';
-
+    change_default();
+    
     if (isset($_GET['control'])) {
         $control_number = $_GET['control'];
     }
@@ -25,7 +26,13 @@
 
         if ($result->num_rows > 0) {
             $row = $result->fetch_assoc();
-            $name = $row['surname'] . ', ' . $row['name'] . ' ' . $row['middle_name'];
+            $name = $row['surname'] . ', ' . $row['name'];
+            if ($row['middle_name'] != "") {
+                $name .= ' ' . $row['middle_name'];
+            }
+            if ($row['suffix'] != "") {
+                $name .= ' ' . $row['suffix'];
+            } 
             $emp_status = $row['status'];
         }
     }
@@ -56,11 +63,11 @@
         border-radius: 5px 0px 0px 0px;
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         margin-left: 100px;
-        border: 0.5px solid black;
+        border: 1px solid black;
         height: 820px;
         overflow-y: auto;
-        width: auto;
-        margin-right: 20px;
+        width: 60%;
+        margin-left: 420px;
     }
 
     table {
@@ -72,7 +79,7 @@
         display: relative;
         text-align: left;
         padding: 8px;
-        border: 1px solid #ddd;
+        border: 1px solid black;
         white-space: nowrap;
         height: 0px;
         vertical-align: top;
@@ -185,6 +192,7 @@
             </span>)
             <span><button type="button" id="back" onclick="redirectToServiceRecord()">Back</button></span>
         </h1>
+        <?php if ($_SESSION['access_level'] != 'employee'){ ?>
         <button type="button" id="add_record" onclick="toggleInputs()">Add Record</button>
         
         <div id="recordInputs" style="display: none;">
@@ -193,7 +201,7 @@
             <textarea name="information" id="information" placeholder="Load / Teaching / Non-Teaching" rows="4"></textarea><br>
             <button type="submit" name="submitRecord" id="submitRecord">Save</button>
         </div>
-
+        <?php } ?>
         <table>
             <thead>
                 <tr class="fixed-row1">

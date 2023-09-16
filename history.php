@@ -6,6 +6,7 @@ if (!isset($_SESSION['user'])) {
     exit();
 }
 include 'navbar_hris.php';
+change_default();
 ?>
 
 <!DOCTYPE html>
@@ -47,6 +48,11 @@ include 'navbar_hris.php';
         .container::-webkit-scrollbar-track {
             background-color: transparent;
         }
+
+        .container tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
         table {
             border-collapse: collapse;
             width: 100%;
@@ -155,26 +161,26 @@ include 'navbar_hris.php';
             <label for="type">Type:</label>
             <select name="type" id="type">
                 <option value="">Select Type</option>
-                <option value="Admin Added" <?php if ($_POST['type'] === "Admin Added") echo "selected"; ?>>Admin Added</option>
-                <option value="Admin Deleted" <?php if ($_POST['type'] === "Admin Deleted") echo "selected"; ?>>Admin Deleted</option>
-                <option value="Admin Updated" <?php if ($_POST['type'] === "Admin Updated") echo "selected"; ?>>Admin Updated</option>
-                <option value="Admin Profile Updated" <?php if ($_POST['type'] === "Admin Profile Updated") echo "selected"; ?>>Admin Profile Updated</option>
-                <option value="Classification Value Added" <?php if ($_POST['type'] === "Classification Value Added") echo "selected"; ?>>Classification Value Added</option>
-                <option value="Classification Value Deleted" <?php if ($_POST['type'] === "Classification Value Deleted") echo "selected"; ?>>Classification Value Deleted</option>
-                <option value="Classification Value Updated" <?php if ($_POST['type'] === "Classification Value Updated") echo "selected"; ?>>Classification Value Updated</option>
-                <option value="Employee Added" <?php if ($_POST['type'] === "Employee Added") echo "selected"; ?>>Employee Added</option>
-                <option value="Employee Deleted" <?php if ($_POST['type'] === "Employee Deleted") echo "selected"; ?>>Employee Deleted</option>
-                <option value="Employment Status Value Added" <?php if ($_POST['type'] === "Employment Status Value Added") echo "selected"; ?>>Employment Status Value Added</option>
-                <option value="Employment Status Value Deleted" <?php if ($_POST['type'] === "Employment Status Value Deleted") echo "selected"; ?>>Employment Status Value Deleted</option>
-                <option value="Employment Status Value Updated" <?php if ($_POST['type'] === "Employment Status Value Updated") echo "selected"; ?>>Employment Status Value Updated</option>
-                <option value="Image Uploaded" <?php if ($_POST['type'] === "Image Uploaded") echo "selected"; ?>>Image Uploaded</option>
-                <option value="Information Updated" <?php if ($_POST['type'] === "Information Updated") echo "selected"; ?>>Information Updated</option>
-                <option value="Profile Updated" <?php if ($_POST['type'] === "Profile Updated") echo "selected"; ?>>Profile Updated</option>
-                <option value="Resignation Updated" <?php if ($_POST['type'] === "Resignation Updated") echo "selected"; ?>>Resignation Updated</option>
-                <option value="Service Record Added" <?php if ($_POST['type'] === "Service Record Added") echo "selected"; ?>>Service Record Added</option>
-                <option value="Service Record Deleted" <?php if ($_POST['type'] === "Service Record Deleted") echo "selected"; ?>>Service Record Deleted</option>
-                <option value="Service Record Updated" <?php if ($_POST['type'] === "Service Record Updated") echo "selected"; ?>>Service Record Updated</option>
-                <option value="Username Update" <?php if ($_POST['type'] === "Username Update") echo "selected"; ?>>Username Update</option>
+                <option value="Admin Added" <?php if (isset($_POST['type']) && $_POST['type'] === "Admin Added") echo "selected"; ?>>Admin Added</option>
+                <option value="Admin Deleted" <?php if (isset($_POST['type']) && $_POST['type'] === "Admin Deleted") echo "selected"; ?>>Admin Deleted</option>
+                <option value="Admin Updated" <?php if (isset($_POST['type']) && $_POST['type'] === "Admin Updated") echo "selected"; ?>>Admin Updated</option>
+                <option value="Admin Profile Updated" <?php if (isset($_POST['type']) && $_POST['type'] === "Admin Profile Updated") echo "selected"; ?>>Admin Profile Updated</option>
+                <option value="Classification Value Added" <?php if (isset($_POST['type']) && $_POST['type'] === "Classification Value Added") echo "selected"; ?>>Classification Value Added</option>
+                <option value="Classification Value Deleted" <?php if (isset($_POST['type']) && $_POST['type'] === "Classification Value Deleted") echo "selected"; ?>>Classification Value Deleted</option>
+                <option value="Classification Value Updated" <?php if (isset($_POST['type']) && $_POST['type'] === "Classification Value Updated") echo "selected"; ?>>Classification Value Updated</option>
+                <option value="Employee Added" <?php if (isset($_POST['type']) && $_POST['type'] === "Employee Added") echo "selected"; ?>>Employee Added</option>
+                <option value="Employee Deleted" <?php if (isset($_POST['type']) && $_POST['type'] === "Employee Deleted") echo "selected"; ?>>Employee Deleted</option>
+                <option value="Employment Status Value Added" <?php if (isset($_POST['type']) && $_POST['type'] === "Employment Status Value Added") echo "selected"; ?>>Employment Status Value Added</option>
+                <option value="Employment Status Value Deleted" <?php if (isset($_POST['type']) && $_POST['type'] === "Employment Status Value Deleted") echo "selected"; ?>>Employment Status Value Deleted</option>
+                <option value="Employment Status Value Updated" <?php if (isset($_POST['type']) && $_POST['type'] === "Employment Status Value Updated") echo "selected"; ?>>Employment Status Value Updated</option>
+                <option value="Image Uploaded" <?php if (isset($_POST['type']) && $_POST['type'] === "Image Uploaded") echo "selected"; ?>>Image Uploaded</option>
+                <option value="Information Updated" <?php if (isset($_POST['type']) && $_POST['type'] === "Information Updated") echo "selected"; ?>>Information Updated</option>
+                <option value="Profile Updated" <?php if (isset($_POST['type']) && $_POST['type'] === "Profile Updated") echo "selected"; ?>>Profile Updated</option>
+                <option value="Resignation Updated" <?php if (isset($_POST['type']) && $_POST['type'] === "Resignation Updated") echo "selected"; ?>>Resignation Updated</option>
+                <option value="Service Record Added" <?php if (isset($_POST['type']) && $_POST['type'] === "Service Record Added") echo "selected"; ?>>Service Record Added</option>
+                <option value="Service Record Deleted" <?php if (isset($_POST['type']) && $_POST['type'] === "Service Record Deleted") echo "selected"; ?>>Service Record Deleted</option>
+                <option value="Service Record Updated" <?php if (isset($_POST['type']) && $_POST['type'] === "Service Record Updated") echo "selected"; ?>>Service Record Updated</option>
+                <option value="Username Update" <?php if (isset($_POST['type']) && $_POST['type'] === "Username Update") echo "selected"; ?>>Username Update</option>
             </select>
 
             </td>
@@ -211,7 +217,9 @@ include 'navbar_hris.php';
             <tr class="fixed-row">
             <th>#</th>
             <th>Admin ID</th>
+            <th>Admin Name</th>
             <th>Employee ID</th>
+            <th>Employee Name</th>
             <th>Type</th>
             <th>Timestamp</th>
             </tr>
@@ -265,13 +273,14 @@ include 'navbar_hris.php';
                     $sql .= " type LIKE '%$filteredType%'";
                 }
                 
-                $sql .= " ORDER BY timestamp DESC";
-                $result = $conn->query($sql);
+                $sql .= " ORDER BY timestamp DESC LIMIT ";
                 if (isset($_POST['num']) && !empty($_POST['num'])){
-                    $num = $_POST['num'];
+                    $sql .= $_POST['num'];
                 }else{
-                    $num = 100;
+                    $sql .= 100;
                 }
+                $result = $conn->query($sql);
+                
                 $i = 1;
                 if ($result->num_rows > 0) {
                         echo '<tbody class="scrollable-content">';
@@ -279,13 +288,12 @@ include 'navbar_hris.php';
                         echo "<tr data-row-id='row-$i'>";
                         echo "<td> $i </td>";
                         echo "<td>{$row['admin_id']}</td>";
+                        echo "<td>{$row['admin_name']}</td>";
                         echo "<td>{$row['employee_id']}</td>";
+                        echo "<td>{$row['employee_name']}</td>";
                         echo "<td>{$row['type']}</td>";
                         echo "<td>{$row['timestamp']}</td>";
                         echo "</tr>";
-                        if ($num <= $i){
-                            break;
-                        }
                         $i++;
                     }
                         echo '</tbody>';
@@ -320,17 +328,23 @@ include 'navbar_hris.php';
         document.addEventListener("DOMContentLoaded", function () {
             const rows = document.querySelectorAll("tr[data-row-id]");
 
-            rows.forEach(row => {
+            rows.forEach((row) => {
                 row.addEventListener("dblclick", function () {
                     if (this.classList.contains("highlighted-row")) {
                         // If the row is already highlighted, remove the highlight
                         this.classList.remove("highlighted-row");
+                        this.style.backgroundColor = "";
                     } else {
                         // Remove the 'highlighted-row' class from all rows
-                        rows.forEach(row => row.classList.remove("highlighted-row"));
+                        rows.forEach((r) => {
+                            r.classList.remove("highlighted-row");
+                            r.style.backgroundColor = "";
+                        });
 
                         // Add the 'highlighted-row' class to the clicked row
                         this.classList.add("highlighted-row");
+                        // Change background color to blue for double-clicked row
+                        this.style.backgroundColor = "#5cabff";
                     }
                 });
             });

@@ -10,6 +10,8 @@
     }
 
     include 'navbar_hris.php';
+
+    
 ?>
 
 <!DOCTYPE html>
@@ -40,7 +42,7 @@
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         margin: auto; /* Center horizontally */
         border: 0.5px solid black;
-        max-height: 600px;
+        max-height: 700px;
         overflow: auto;
     }
     
@@ -80,7 +82,7 @@
         clear: right;
     }
 
-    img{
+    th img{
         width: 110px;
         height: 110px;
         border: 1px;
@@ -111,19 +113,18 @@
         <table>
             <tr>
                 <th>
-                    <span>Name:</span> <?php echo $_SESSION['name'] ?><br>
+                    <span>Name:</span> <?php echo $_SESSION['fname'] ?><br>
                     <span>Control Number</span>: <?php echo $_SESSION['control_number'] ?><br>
-                    <span>Username:</span> <?php echo $_SESSION['username'] ?>
                 </th>
                 <th><img src="images/<?php echo $image ?>" alt="No Image" class="right-label"></th>
             </tr>
         </table><br><br>
         <label for="current_password">Current Password:</label>
         <input type="password" name="current_password" id="current_password" placeholder="Enter Current Password">
-
+        <br>
         <label for="new_password">New Password:</label>
         <input type="password" name="new_password" id="new_password" placeholder="Enter New Password">
-        
+        <br>
         <label for="confirm_password">Confirm Password:</label>
         <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirm New Password">
 
@@ -134,29 +135,45 @@
                 $confirm_password = sha1($_POST['confirm_password']);
 
                 if ($current_password == $_SESSION['password']) {
-                    if ($new_password == $confirm_password) {
-                        if ($new_password == $current_password){
-                            $error_message = "New password cannot be the same as the current password.";
+                    if (strlen($_POST['new_password']) >= 8){
+                        if ($new_password == $confirm_password) {
+                            if ($new_password == $current_password){
+                                $error_message = "New password cannot be the same as the current password.";
+                            }
+                            else{
+                                $sql = "SELECT birthday FROM employees WHERE control_number = '" . $_SESSION['control_number'] . "'";
+                                $result = $conn->query($sql);
+                                $row = $result->fetch_assoc();
+                                $birthday = $row['birthday'];
+
+                                if ($new_password != sha1($birthday)) {
+                                    $sql = "UPDATE user SET password = ? WHERE control_number = ?";
+                                    $stmt = $conn->prepare($sql);
+                                    $stmt->bind_param("ss", $new_password, $_SESSION['control_number']);
+                                    $stmt->execute();
+                                    $stmt->close();
+
+                                    $success_message = "Successfully changed password.";
+                                    
+                                    $type = "Password Update";
+                                    history($_SESSION['control_number'], "Settings", $type);
+
+                                    $_SESSION['password'] = $new_password;
+                                    unset($current_password, $new_password, $confirm_password);
+                                }
+                                else{
+                                    $error_message = "New password cannot be the same as your birthday.";
+                                }
+                            }
                         }
-                        else{
-                            $sql = "UPDATE user SET password = ? WHERE control_number = ?";
-                            $stmt = $conn->prepare($sql);
-                            $stmt->bind_param("ss", $new_password, $_SESSION['control_number']);
-                            $stmt->execute();
-                            $stmt->close();
-
-                            $success_message = "Successfully changed password.";
-                            
-                            $type = "Password Update";
-                            history($_SESSION['control_number'], "Settings", $type);
-
-                            $_SESSION['password'] = $new_password;
-                            unset($current_password, $new_password, $confirm_password);
+                        else {
+                            $error_message = "New password and confirm password do not match.";
                         }
                     }
                     else {
-                        $error_message = "New password and confirm password do not match.";
+                        $error_message = "Password must be at least 8 characters.";
                     }
+
                 }
                 else {
                     $error_message = "Current password is incorrect.";
@@ -192,3 +209,13 @@
 </script>
 
 </html>
+<?php 
+    if (check_default() == 2 && !isset($success_message)) {
+        echo '<script>
+            alert("Please Change Your Default Password.");
+            </script>';
+    }
+    if (check_default() != 2 && check_default() != 0) {
+        change_default();
+    }
+?>

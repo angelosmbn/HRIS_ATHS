@@ -11,7 +11,8 @@
         exit();
     }
     include 'navbar_hris.php';
-
+    change_default();
+    
     if (isset($_GET['control_number'])) {
         $control_number = $_GET['control_number'];   
     }

@@ -86,7 +86,7 @@
                 $stmt_update->execute();
                 $stmt_update->close();
     
-                history($_SESSION['control_number'], $control_number, "Reset Admin Username & Password");
+                history($_SESSION['control_number'], $control_number, "Reset Employee Username & Password");
                 $flag2 = true;
             }
         }
@@ -94,27 +94,27 @@
         // Redirect back to the previous page or wherever you want to go after updating.
         if ($flag && $flag2) {
             echo '<script>
-            alert("Successfully Reset & Updated Admin!");
-            window.location="manage_admin.php?"
+            alert("Successfully Reset & Updated Employee!");
+            window.location="manage_employee.php?"
         </script>';
         }
         elseif ($flag) {
             echo '<script>
-            alert("Successfully Updated Admin!");
-            window.location="manage_admin.php?"
+            alert("Successfully Updated Employee!");
+            window.location="manage_employee.php?"
         </script>';
         }
         elseif ($flag2) {
             echo '<script>
-        alert("Successfully Reset Admin Username & Password! - ' . $birthday . '");
-        window.location="manage_admin.php";
+        alert("Successfully Reset Employees Username & Password! - ' . $birthday . '");
+        window.location="manage_employee.php";
     </script>';
 
         }
         else{
             echo '<script>
             alert("There Were No Changes.");
-            window.location="manage_admin.php"
+            window.location="manage_employee.php"
         </script>';
         }
         
@@ -295,7 +295,7 @@
 
     <div class="container">
         <h1>
-            <span style="color: black;">Manage Admin</span>  
+            <span style="color: black;">Manage Employee</span>  
         </h1>
         <div>
             <form action="" method="POST" class="search_bar">
@@ -324,7 +324,7 @@
             </thead>
 
             <?php
-                $sql = "SELECT * FROM user WHERE access_level != 'employee'";
+                $sql = "SELECT * FROM user WHERE access_level = 'employee'";
                
 
                 if (isset($_POST['name']) && !empty($_POST['name'])) {

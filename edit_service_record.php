@@ -8,7 +8,8 @@
     }
 
     include 'navbar_hris.php';
-
+    change_default();
+    
     if (isset($_GET['service_id'])) {
         $service_id = $_GET['service_id'];   
     }
@@ -70,10 +71,11 @@
         margin-right: 20px;
         border-radius: 0.5rem;
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        margin-left: 100px;
+        margin-left: 420px;
         border: 0.5px solid black;
         max-height: 820px;
         overflow-y: auto;
+        width: 60%;
     }
 
     #information {

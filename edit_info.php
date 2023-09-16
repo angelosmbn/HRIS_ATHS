@@ -8,7 +8,8 @@
     }
 
     include 'navbar_hris.php';
-
+    change_default();
+    
     if (isset($_GET['control'])) {
         $control_number = $_GET['control'];
         if(isset($_GET['success_message'])) {
@@ -38,6 +39,7 @@
             $surname = $_POST['surname'];
             $name = $_POST['name'];
             $middle_name = $_POST['middle_name'];
+            $suffix = $_POST['suffix'];
             $birthday = $_POST['birthday'];
             $civil_status = $_POST['civil_status'];
             $gender = $_POST['gender'];
@@ -45,6 +47,7 @@
             $classification = $_POST['classification'];
             $date_hired = $_POST['date_hired'];
             $years_service = $_POST['years_service'];
+            $less_years_service = $_POST['less_years_service'];
             $address = $_POST['address'];
             $contact = $_POST['contact'];
             $email = $_POST['email'];
@@ -74,7 +77,11 @@
                 $unchanged_msg = '';
                 if ($result->num_rows > 0) {
                     $rows = $result->fetch_assoc();
+                    $old_less_years_service = $rows['less_yis'];
                     $old_date_hired = $rows['date_hired'];
+                    $old_birthday = $rows['birthday'];
+                    $old_classification = $rows['classification'];
+                    $old_employment_status = $rows['employment_status'];
                     if (isset($_POST['resignationDate'])) {
                         $old_resignation_date = $rows['resignation_date'];
                     }
@@ -83,6 +90,7 @@
                         $surname != $rows['surname'] ||
                         $name != $rows['name'] ||
                         $middle_name != $rows['middle_name'] ||
+                        $suffix != $rows['suffix'] ||
                         $birthday != $rows['birthday'] ||
                         $civil_status != $rows['civil_status'] ||
                         $gender != $rows['gender'] ||
@@ -90,6 +98,7 @@
                         $classification != $rows['classification'] ||
                         $date_hired != $rows['date_hired'] ||
                         $years_service != $rows['years_in_service'] ||
+                        $less_years_service != $rows['less_yis'] ||
                         $address != $rows['address'] ||
                         $contact != $rows['contact'] ||
                         $email != $rows['email'] ||
@@ -97,7 +106,7 @@
                         $further_studies != $rows['further_studies'] ||
                         $number_units != $rows['number_of_units'] ||
                         $prc_number != $rows['prc_number'] ||
-                        $prc_exp != $rows['prc_exp'] ||
+                        ($prc_exp != $rows['prc_exp'] &&  ($rows['prc_exp'] != '0000-00-00' || $prc_exp != "")) || 
                         $position != $rows['position'] ||
                         $tin != $rows['tin'] ||
                         $sss != $rows['sss'] ||
@@ -110,7 +119,7 @@
                     )
                     { //changes were made
 
-                        if ($date_hired != $old_date_hired || isset($_POST['resigned']) || isset($_POST['unresigned']) || ($old_resignation_date != $resignation_date && $resignation_date != "")) {
+                        if ($date_hired != $old_date_hired || isset($_POST['resigned']) || isset($_POST['unresigned']) || ($old_resignation_date != $resignation_date && $resignation_date != "") || ($old_less_years_service != $less_years_service)) {
                             $sql_years = "SELECT * FROM employees WHERE control_number = ?";
                             $stmt = $conn->prepare($sql_years);
                             $stmt->bind_param("s", $control_number);
@@ -128,7 +137,7 @@
                                     $resignationDateObj = new DateTime(); // Set resignation date to date_hired if unresigned
                                     $formattedResignationDate = $resignationDateObj->format('Y-m-d'); // Format the DateTime as needed
                                 }
-                                
+                                $resignationDateObj->setTimezone($timezone);
                                 $dateHired = new DateTime($date_hired);
                                 $formattedDateHired = $dateHired->format('Y-m-d'); // Format the DateTime as needed
                                 
@@ -149,6 +158,7 @@
                                 $surname != $rows['surname'] ||
                                 $name != $rows['name'] ||
                                 $middle_name != $rows['middle_name'] ||
+                                $suffix != $rows['suffix'] ||
                                 $birthday != $rows['birthday'] ||
                                 $civil_status != $rows['civil_status'] ||
                                 $gender != $rows['gender'] ||
@@ -156,6 +166,7 @@
                                 $classification != $rows['classification'] ||
                                 $date_hired != $rows['date_hired'] ||
                                 $years_service != $rows['years_in_service'] ||
+                                $less_years_service != $rows['less_yis'] ||
                                 $address != $rows['address'] ||
                                 $contact != $rows['contact'] ||
                                 $email != $rows['email'] ||
@@ -171,13 +182,59 @@
                                 $pagibig != $rows['pag_ibig'] ||
                                 $department != $rows['department']
                             ){
-                                $stmt = $conn->prepare("UPDATE employees SET control_number=?, surname=?, name=?, middle_name=?, birthday=?, civil_status=?, gender=?, employment_status=?, classification=?, date_hired=?, years_in_service=?, address=?, contact=?, email=?, course_taken=?, further_studies=?, number_of_units=?, prc_number=?, prc_exp=?, position=?, tin=?, sss=?, philhealth=?, pag_ibig=?, department=? WHERE control_number=?");
-                                $stmt->bind_param("ssssssssssisssssssssssssss", $new_control_number, $surname, $name, $middle_name, $birthday, $civil_status, $gender, $employment_status, $classification, $date_hired, $years_service, $address, $contact, $email, $course_taken, $further_studies, $number_units, $prc_number, $prc_exp, $position, $tin, $sss, $philhealth, $pagibig, $department, $control_number);
+                                if ($less_years_service != 0 && ($old_less_years_service != $less_years_service)) {
+                                    $years_service = $years_service - $less_years_service;
+                                }
+
+                                $stmt = $conn->prepare("UPDATE employees SET control_number=?, surname=?, name=?, middle_name=?, suffix=?, birthday=?, civil_status=?, gender=?, employment_status=?, classification=?, date_hired=?, years_in_service=?, address=?, contact=?, email=?, course_taken=?, further_studies=?, number_of_units=?, prc_number=?, prc_exp=?, position=?, tin=?, sss=?, philhealth=?, pag_ibig=?, department=?, less_yis=? WHERE control_number=?");
+                                $stmt->bind_param("sssssssssssissssssssssssssis", $new_control_number, $surname, $name, $middle_name, $suffix, $birthday, $civil_status, $gender, $employment_status, $classification, $date_hired, $years_service, $address, $contact, $email, $course_taken, $further_studies, $number_units, $prc_number, $prc_exp, $position, $tin, $sss, $philhealth, $pagibig, $department, $less_years_service, $control_number);
                                 $stmt->execute();
+
+                                if ($old_classification != $classification || $old_employment_status != $employment_status) {
+                                    updateSLVL($conn, $new_control_number, $employment_status, $classification);
+                                }
+
                                 $success_message = "Information Successfully Updated";
-                                $control_number = $new_control_number;
-            
+                                
                                 $type = "Information Updated";
+
+                                $sql = "SELECT * FROM user WHERE control_number = ?";
+                                $stmt = $conn->prepare($sql);
+                                $stmt->bind_param("s", $control_number);
+                                $stmt->execute();
+                                $result = $stmt->get_result();
+                                $stmt->close();
+                                if ($result->num_rows > 0) {
+                                    $rows = $result->fetch_assoc();
+                                    $username = $rows['username'];
+                                    $password = $rows['password'];
+                                }
+                                if (($birthday != $old_birthday && sha1($old_birthday) == $password ) || ($control_number != $new_control_number && sha1($control_number) == $username)) {
+                                    if ($control_number != $new_control_number && sha1($control_number) == $username) {
+                                        $encrypted_control_number = sha1($new_control_number);
+                                        $stmt = $conn->prepare("UPDATE user SET username=? WHERE control_number=?");
+                                        $stmt->bind_param("ss", $encrypted_control_number, $control_number);
+                                        $stmt->execute();
+                                        $stmt->close();
+                                    }
+                                    if ($birthday != $old_birthday && sha1($old_birthday) == $password) {
+                                        $encrypted_birthday = sha1($birthday);
+                                        $stmt = $conn->prepare("UPDATE user SET password=? WHERE control_number=?");
+                                        $stmt->bind_param("ss", $encrypted_birthday, $control_number);
+                                        $stmt->execute();
+                                        $stmt->close();
+                                    }
+                                    
+                                }
+                                if ($control_number != $new_control_number) {
+                                    $stmt = $conn->prepare("UPDATE user SET control_number=? WHERE control_number=?");
+                                    $stmt->bind_param("ss", $new_control_number, $control_number);
+                                    $stmt->execute();
+                                    $stmt->close();
+                                }
+                                $control_number = $new_control_number;
+
+
                             }
                         }
 
@@ -199,6 +256,11 @@
                                 }
                                 $success_message = "Information Successfully Updated";
                             }
+
+                            $stmt = $conn->prepare("UPDATE user SET status = 'active' WHERE control_number = ?");
+                            $stmt->bind_param("s", $control_number);
+                            $stmt->execute();
+                            $stmt->close();
                         }
                         if (isset($_POST['resignationDate']) && $resignation_date != "") {
                             $resignationDate = $_POST['resignationDate'];
@@ -212,13 +274,19 @@
                                 
                                 if ($affectedRows > 0){
                                     if (isset($type)){
-                                        $type .= ", Resignation Updated";
+                                        $type .= ", Resigned Employee";
                                     }
                                     else{
-                                        $type = "Resignation Updated1";
+                                        $type = "Resigned Employee";
                                     }
-                                    $success_message = "Information Successfully Updated";
+                                    $success_message = "Information Successfully Updated2";
                                 }
+
+                                $stmt = $conn->prepare("UPDATE user SET status = 'disabled' WHERE control_number = ?");
+                                $stmt->bind_param("s", $control_number);
+                                $stmt->execute();
+                                $stmt->close();
+
                             } else {
                                 $stmt = $conn->prepare("UPDATE employees SET status = 'resigned', resignation_date = ?, years_in_service = ? WHERE control_number = ? AND resignation_date != ?");
                                 $stmt->bind_param("ssss", $resignationDate, $years_service, $control_number, $resignationDate);
@@ -231,9 +299,9 @@
                                         $type .= ", Resignation Updated";
                                     }
                                     else{
-                                        $type = "Resignation Updated2";
+                                        $type = "Resignation Updated";
                                     }
-                                    $success_message = "Information Successfully Updated";
+                                    $success_message = "Information Successfully Updated1";
                                 }
                             }
                         }
@@ -321,6 +389,7 @@
         $surname = $row['surname'];
         $name = $row['name'];
         $middle_name = $row['middle_name'];
+        $suffix = $row['suffix'];
         $birthday = $row['birthday'];
         $civil_status = $row['civil_status'];
         $gender = $row['gender'];
@@ -328,6 +397,7 @@
         $classification = $row['classification'];
         $date_hired = $row['date_hired'];
         $years_service = $row['years_in_service'];
+        $less_years_service = $row['less_yis'];
         $address = $row['address'];
         $contact = $row['contact'];
         $email = $row['email'];
@@ -377,8 +447,8 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             margin: auto;
             border: 0.5px solid black;
-            height: 850px;
-            margin-top: 0px;
+            height: 880px;
+            margin-top: -10px;
             overflow: auto;
         }
 
@@ -391,10 +461,17 @@
             width: 100%;
             height: 40px;
             font-size: 17px;
+            background-color: #f7f7f7;
             box-sizing: border-box;
             padding-left: 8px;
+            border: 1px solid #999;
         }
         
+        #fileToUpload {
+            background-color: #fff;
+            border: none;
+        }
+
         .submission {
             position: relative;
             margin-top: 20px;
@@ -527,11 +604,23 @@
         #resignation-col {
             width: 30%;
         }
+        
 
         #image-upload {
             display: absolute;
             max-width: 120px;
             max-height: 120px;
+        }
+
+        #years_service_th, #less_years_service_th {
+            width: 8%;
+        }
+        #suffix-th {
+            width: 8%;
+        }
+
+        label {
+            font-weight: 550; 
         }
     </style>
 </head>
@@ -544,16 +633,18 @@
                 <table>
                     <tr>
                         <th><label for="control_number">Control Number:</label></th>
-                        <th><label for="surname" id="sur-tab">Surname:</label></th>
-                        <th><label for="name" id="name-tab">Name:</label></th>
-                        <th><label for="middle_name" id="mid-tab">Middle Name:</label><br></th>
+                        <th><label for="surname">Surname:</label></th>
+                        <th><label for="name">Name:</label></th>
+                        <th><label for="middle_name">Middle Name:</label></th>
+                        <th id="suffix-th"><label for="middle_name">Suffix:</label><br></th>
                     </tr>
 
                     <tr>
-                        <th id="control_number_th"><input type="text" name="control_number" id="control_number" value="<?php echo isset($control_number) ? $control_number : '' ?>" required></th>
-                        <th><input type="text" name="surname" id="surname" value="<?php echo isset($surname) ? $surname : '' ?>" required></th>
-                        <th><input type="text" name="name" id="name" value="<?php echo isset($name) ? $name : '' ?>"></th>
-                        <th><input type="text" name="middle_name" id="middle_name" value="<?php echo isset($middle_name) ? $middle_name : '' ?>" ><br></th>
+                        <th id="control_number_th"><input type="text" name="control_number" id="control_number" maxlength="13" value="<?php echo isset($control_number) ? $control_number : '' ?>" required></th>
+                        <th><input type="text" name="surname" id="surname" maxlength="50" value="<?php echo isset($surname) ? $surname : '' ?>" required></th>
+                        <th><input type="text" name="name" id="name" maxlength="50" value="<?php echo isset($name) ? $name : '' ?>" required></th>
+                        <th><input type="text" name="middle_name" id="middle_name" maxlength="50" value="<?php echo isset($middle_name) ? $middle_name : '' ?>" ></th>
+                        <th><input type="text" name="suffix" id="suffix" maxlength="20" value="<?php echo isset($suffix) ? $suffix : '' ?>" ><br></th>
                     </tr>
                 </table>
 
@@ -565,29 +656,30 @@
                         <th><label for="employment_status" id="status-tab">Employment Status:</label> 
                         <th ><label for="classification" id="class-tab">Classification:</label>
                         <th ><label for="date_hired">Date Hired:</label>
-                        <th><label for="years_service">Years in Service:</label><br>
+                        <th id="years_service_th"><label for="years_service">YIS:</label>
+                        <th id="less_years_service_th"><label for="less_years_service">LESS YIS:</label><br>
                     </tr>
 
                     <tr>
-                        <th><input type="date" name="birthday" id="birthday" value="<?php echo isset($birthday) ? $birthday : '' ?>" >
+                        <th><input type="date" name="birthday" id="birthday" value="<?php echo isset($birthday) ? $birthday : '' ?>" required>
                         <th>
                             <select name="civil_status" id="civil_status" >
-                                <option value="">Civil Status</option>
+                                <option value="">Select Civil Status</option>
                                 <option value="Single" <?php echo (isset($civil_status) && $civil_status === 'Single') ? 'selected' : ''; ?>>Single</option>
                                 <option value="Married" <?php echo (isset($civil_status) && $civil_status === 'Married') ? 'selected' : ''; ?>>Married</option>
                                 <option value="Widowed" <?php echo (isset($civil_status) && $civil_status === 'Widowed') ? 'selected' : ''; ?>>Widowed</option>
                             </select>
                         </th>
                         <th>
-                            <select name="gender" id="gender" >
+                            <select name="gender" id="gender" required>>
                                 <option value="">Select Gender</option>
                                 <option value="Male" <?php echo (isset($gender) && $gender === 'Male') ? 'selected' : ''; ?>>Male</option>
                                 <option value="Female" <?php echo (isset($gender) && $gender === 'Female') ? 'selected' : ''; ?>>Female</option>
                             </select>
                         </th>
                         <th>
-                            <select name="employment_status" id="employment_status" >
-                                <option value="">Employment Status</option>
+                            <select name="employment_status" id="employment_status" required>>
+                                <option value="">Select Employment Status</option>
                                 <?php 
                                     $data_type = "emp_status";
                                     $sql = "SELECT * FROM data_values WHERE data_type = ?";
@@ -603,8 +695,8 @@
                             </select>
                         </th>
                         <th>
-                            <select name="classification" id="classification">
-                                <option value="">Classification</option>
+                            <select name="classification" id="classification" required>>
+                                <option value="">Select Classification</option>
                                 <?php 
                                     $data_type = "classification";
                                     $sql = "SELECT * FROM data_values WHERE data_type = ?";
@@ -620,7 +712,8 @@
                             </select>
                         </th>
                         <th><input type="date" name="date_hired" id="date_hired" value="<?php echo isset($date_hired) ? $date_hired : '' ?>" >
-                        <th><input type="number" name="years_service" id="years_service" value="<?php echo isset($years_service) ? $years_service : '' ?>"><br>
+                        <th><input type="number" name="years_service" id="years_service" value="<?php echo isset($years_service) ? $years_service : '' ?>" readonly>
+                        <th><input type="number" name="less_years_service" id="less_years_service" min="0" value="<?php echo isset($less_years_service) ? $less_years_service : '' ?>"><br>
                     </tr>
                 </table>
                 
@@ -632,9 +725,9 @@
                     </tr>
 
                     <tr>  
-                        <th><input type="address" name="address" id="address" value="<?php echo isset($address) ? $address : '' ?>">
+                        <th><input type="address" name="address" id="address" maxlength="250" value="<?php echo isset($address) ? $address : '' ?>">
                         <th><input type="text" name="contact" id="contact" maxlength="11" minlength="11" value="<?php echo isset($contact) ? $contact : '' ?>" >
-                        <th><input type="email" name="email" id="email" value="<?php echo isset($email) ? $email : '' ?>" ><br>
+                        <th><input type="email" name="email" id="email" maxlength="100" value="<?php echo isset($email) ? $email : '' ?>" ><br>
                     </tr>
                 </table>
 
@@ -646,8 +739,8 @@
                     </tr>
 
                     <tr>
-                    <th><input type="text" name="course_taken" id="course_taken" value="<?php echo isset($course_taken) ? $course_taken : '' ?>" >
-                    <th><input type="text" name="further_studies" id="further_studies" value="<?php echo isset($further_studies) ? $further_studies : '' ?>">
+                    <th><input type="text" name="course_taken" id="course_taken" maxlength="250" value="<?php echo isset($course_taken) ? $course_taken : '' ?>" >
+                    <th><input type="text" name="further_studies" id="further_studies" maxlength="20" value="<?php echo isset($further_studies) ? $further_studies : '' ?>">
                     <th id="control_number_th"><input type="number" step="any" name="number_units" id="number_units" value="<?php echo isset($number_units) ? $number_units : '' ?>"><br>
                     </tr>
                 </table>
@@ -661,9 +754,9 @@
                     </tr>
 
                     <tr>
-                        <th id="thirty"><input type="text" name="prc_number" id="prc_number" value="<?php echo isset($prc_number) ? $prc_number : '' ?>">
+                        <th id="thirty"><input type="text" name="prc_number" id="prc_number" maxlength="7" value="<?php echo isset($prc_number) ? $prc_number : '' ?>">
                         <th id="prc_exp_th"><input type="date" name="prc_exp" id="prc_exp" value="<?php echo isset($prc_exp) ? $prc_exp : '' ?>">
-                        <th><input type="text" name="position" id="position" value="<?php echo isset($position) ? $position : '' ?>" >
+                        <th><input type="text" name="position" id="position" maxlength="100" value="<?php echo isset($position) ? $position : '' ?>" >
                         <th id="thirty"><input type="text" name="tin" id="tin" maxlength="11" minlength="11" value="<?php echo isset($tin) ? $tin : '' ?>"><br>
                     </tr>
                 </table>
@@ -681,8 +774,8 @@
                         <th><input type="text" name="philhealth" id="philhealth" maxlength="14" minlength="14" value="<?php echo isset($philhealth) ? $philhealth : '' ?>">
                         <th><input type="text" name="pagibig" id="pagibig" maxlength="12" minlength="12" value="<?php echo isset($pagibig) ? $pagibig : '' ?>">
                         <th>
-                            <select name="department" id="department">
-                                <option value="">Department</option>
+                            <select name="department" id="department" required>>
+                                <option value="">Select Department</option>
                                 <?php 
                                     $data_type = "department";
                                     $sql = "SELECT * FROM data_values WHERE data_type = ?";
@@ -735,7 +828,7 @@
                         }
                         ?>
 
-                        <th>Image:
+                        <th><label for="fileToUpload">Image:</label>
                             <input type="file" name="fileToUpload" id="fileToUpload" onchange="previewImage();">
                             <div class="preview-box" id="previewBox">
                                 <?php 
@@ -840,7 +933,7 @@
 
     // Function to disable input fields
     function disableInputFields() {
-        var inputFields = document.querySelectorAll('#control_number, #surname, #name, #middle_name, #birthday, #civil_status, #gender, #employment_status, #classification, #date_hired, #years_service, #address, #contact, #email, #course_taken, #further_studies, #number_units, #prc_number, #prc_exp, #position, #tin, #sss, #philhealth, #pagibig, #fileToUpload, #resigned, #resignationDate, #department, #unresigned');
+        var inputFields = document.querySelectorAll('#control_number, #surname, #name, #middle_name, #birthday, #civil_status, #gender, #employment_status, #classification, #date_hired, #years_service, #address, #contact, #email, #course_taken, #further_studies, #number_units, #prc_number, #prc_exp, #position, #tin, #sss, #philhealth, #pagibig, #fileToUpload, #resigned, #resignationDate, #department, #unresigned, #less_years_service, #suffix');
 
         inputFields.forEach(function(input) {
             input.disabled = true;

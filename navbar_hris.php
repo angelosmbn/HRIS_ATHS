@@ -4,12 +4,199 @@ if (!isset($_SESSION['user'])) {
   header("Location: login_hris.php");
   exit();
 }
+define('MY_TIMEZONE', 'Asia/Manila');
+$timezone = new DateTimeZone(MY_TIMEZONE);
 ?>
+
+<?php 
+   $conn = new mysqli('localhost', 'root', '', 'hris');
+   // Logout logic
+   if (isset($_GET['logout'])) {
+    session_destroy();
+    echo ("<script>location.href='login_hris.php'</script>");
+    exit();
+  }
+
+  function history($admin_id, $employee_id, $type) {
+    $conn = new mysqli('localhost', 'root', '', 'hris');
+
+    //Get Admin Name
+    $get_admin_name = $conn->prepare("SELECT * FROM user WHERE control_number = ?");
+    $get_admin_name->bind_param("s", $admin_id);
+    $get_admin_name->execute();
+    $result_admin_name = $get_admin_name->get_result();
+    if ($result_admin_name->num_rows > 0) {
+      $admin = $result_admin_name->fetch_assoc();
+      $admin_name = $admin['surname'] . ", " . $admin['name'];
+      if ($admin['middle_name'] !== "") {
+        $admin_name .= " " . $admin['middle_name'][0] . ".";
+      }
+      if ($admin['suffix'] !== "") {
+        $admin_name .= " " . $admin['suffix'];
+      }
+    }else{
+      $admin_name = "Unknown";
+    }
+
+    //Get Employee Name
+    $get_employee_name = $conn->prepare("SELECT * FROM employees WHERE control_number = ?");
+    $get_employee_name->bind_param("s", $employee_id);
+    $get_employee_name->execute();
+    $result_employee_name = $get_employee_name->get_result();
+    if ($result_employee_name->num_rows > 0) {
+      $employee = $result_employee_name->fetch_assoc();
+      $employee_name = $employee['surname'] . ", " . $employee['name'];
+      if ($employee['middle_name'] !== "") {
+        $employee_name .= " " . $employee['middle_name'][0] . ".";
+      }
+      if ($employee['suffix'] !== "") {
+        $employee_name .= " " . $employee['suffix'];
+      }
+    }else{
+      $employee_name = "Unknown";
+    }
+
+    $stmt = $conn->prepare("INSERT INTO history (admin_id, employee_id, type, admin_name, employee_name)
+                            VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("sssss", $admin_id, $employee_id, $type, $admin_name, $employee_name);
+    $stmt->execute();
+    $stmt->close();
+  }
+
+  function change_default() {
+    $conn = new mysqli('localhost', 'root', '', 'hris');
+    if (true) {
+      $sql = "SELECT * FROM user WHERE control_number = ?";
+      $stmt = $conn->prepare($sql);
+      $stmt->bind_param("s", $_SESSION['control_number']);
+      $stmt->execute();
+      $result_user = $stmt->get_result();
+      $stmt->close();
+
+      if ($result_user->num_rows > 0) {
+        $user = $result_user->fetch_assoc();
+        $username = $user['username'];
+        $password = $user['password'];
+
+        $sql = "SELECT * FROM employees WHERE control_number = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("s", $_SESSION['control_number']);
+        $stmt->execute();
+        $result_emp = $stmt->get_result();
+        $stmt->close();
+
+        if ($result_emp->num_rows > 0) {
+          $emp = $result_emp->fetch_assoc();
+          $control_number_emp = $emp['control_number'];
+          $birthday = $emp['birthday'];
+        }
+
+        if ($username == sha1($control_number_emp) ) {
+          echo '<script>
+                  window.location="settings_change_username.php?control=' . $_SESSION['control_number'] . '"
+              </script>';
+          exit();
+        }
+        if ($password == sha1($birthday) ) {
+          echo '<script>
+                  window.location="settings_change_password.php?control=' . $_SESSION['control_number'] . '"
+              </script>';
+          exit();
+        }
+      }
+
+    }
+  }
+
+  function check_default() {
+    $conn = new mysqli('localhost', 'root', '', 'hris');
+    if ($_SESSION['access_level'] == 'employee') {
+      $sql = "SELECT * FROM user WHERE control_number = ?";
+      $stmt = $conn->prepare($sql);
+      $stmt->bind_param("s", $_SESSION['control_number']);
+      $stmt->execute();
+      $result_user = $stmt->get_result();
+      $stmt->close();
+
+      if ($result_user->num_rows > 0) {
+        $user = $result_user->fetch_assoc();
+        $username = $user['username'];
+        $password = $user['password'];
+
+        $sql = "SELECT * FROM employees WHERE control_number = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("s", $_SESSION['control_number']);
+        $stmt->execute();
+        $result_emp = $stmt->get_result();
+        $stmt->close();
+
+        if ($result_emp->num_rows > 0) {
+          $emp = $result_emp->fetch_assoc();
+          $control_number_emp = $emp['control_number'];
+          $birthday = $emp['birthday'];
+        }
+
+        if ($username == sha1($control_number_emp) ) {
+          return 1;
+        }
+        elseif ($password == sha1($birthday) ) {
+          return 2;
+        }
+        else{
+          return 0;
+        }
+      }
+
+    }
+  }
+
+  function updateSLVL($conn, $control_number, $employment_status, $classification) {
+    $sl = 0;
+    $vl = 0;
+    
+    if ($classification == 'Rank and File (Faculty)' && $employment_status == 'Permanent') {
+      $sl = 10;
+    }
+    elseif ($classification == 'Rank and File (Faculty)' && $employment_status == 'Probationary') {
+      $sl = 5;
+    }
+    elseif ($classification == 'Rank and File (Staff)' && $employment_status == 'Permanent') {
+      $sl = 10;
+      $vl = 5;
+    }
+    elseif ($classification == 'Rank and File (Staff)' && $employment_status == 'Probationary') {
+      $sl = 5;
+    }
+    elseif (
+      $classification == 'Academic Middle-Level Administrator' ||
+      $classification == 'Non-Academic Middle-Level Administrator' ||
+      $classification == 'Top Management') 
+    {
+      $sl = 10;
+      $vl = 10;
+    }
+    elseif ($classification == 'Auxiliary' && $employment_status == 'Permanent') {
+      $sl = 10;
+      $vl = 5;
+    }
+    elseif ($classification == 'Auxiliary' && $employment_status == 'Probationary') {
+      $sl = 5;
+    }
+
+    $sql = "UPDATE employees SET sl=?, vl=? WHERE control_number=?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("sss", $sl, $vl, $control_number);
+  }
+
+?>
+
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
   <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/all.min.css">
+    <link rel="stylesheet" href="css/fontawesome.min.css">
+    <link rel="stylesheet" href="">
     <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
      <meta name="viewport" content="width=device-width, initial-scale=1.0">
      <style>
@@ -235,7 +422,7 @@ if (!isset($_SESSION['user'])) {
         font-weight: 500;
         white-space: nowrap;
         }
-        .sidebar.close .profile-details .bx-log-out,
+        .sidebar.close .profile-details .log-out,
         .sidebar.close .profile-details .profile_name,
         .sidebar.close .profile-details .job{
         display: none;
@@ -319,52 +506,39 @@ if (!isset($_SESSION['user'])) {
      </style>
    </head>
 
-<?php 
-   $conn = new mysqli('localhost', 'root', '', 'hris');
-   // Logout logic
-   if (isset($_GET['logout'])) {
-    session_destroy();
-    echo ("<script>location.href='login_hris.php'</script>");
-    exit();
-  }
-
-  function history($admin_id, $employee_id, $type) {
-    $conn = new mysqli('localhost', 'root', '', 'hris');
-    $stmt = $conn->prepare("INSERT INTO history (admin_id, employee_id, type)
-                            VALUES (?, ?, ?)");
-    $stmt->bind_param("sss", $admin_id, $employee_id, $type);
-    $stmt->execute();
-    $stmt->close();
-  }
-?>
-
-
 <body>
   <div class="sidebar close">
     <div class="logo-details">
       <i class='bx bx-menu-menu'><img class='profile-logo' src="images/aths-logo.png" alt="profileImg"></i>
       <span class="logo_name">
-        ASSUMPTA HRIS
+        Welcome to HRIS
       </span>
     </div>
 
     <ul class="nav-links">
-      <li>
+      <?php 
+        if ($_SESSION['access_level'] != 'employee') {
+      ?>
+    <li>
         <a href="Admin_home_hris.php">
-          <i class='bx bx-grid-alt' ></i>
-          <span class="link_name">Dashboard1</span>
+          <!--<i class='bx bx-grid-alt' ></i>-->
+          <i class="fa-solid fa-border-all" style="color: #d6d6d6;"></i>
+          <span class="link_name">Dashboard</span>
         </a>
         <ul class="sub-menu blank">
-          <li><a class="link_name" href="#">Dashboard2</a></li>
+          <li><a class="link_name" href="#">Dashboard</a></li>
         </ul>
       </li>
       <li>
         <div class="iocn-link">
           <a href="cur_emp.php">
-            <i class='bx bx-user' ></i>
+            <!--<i class='bx bx-user' ></i>-->
+            <!--<i class="fa-regular fa-user fa-2xs" style="color: #dedede;"></i>-->
+            <i class="fa-solid fa-users" style="color: #dedede;"></i>
             <span class="link_name">Employees</span>
           </a>
-          <i class='bx bxs-chevron-down arrow' ></i>
+          <!--<i class='bx bxs-chevron-down arrow' ></i>-->
+          <i class="fa-solid fa-chevron-down fa-2xs arrow" style="color: #dedede;"></i>
         </div>
         <ul class="sub-menu">
           <li><a class="link_name" href="cur_emp.php">Employees</a></li>
@@ -373,39 +547,122 @@ if (!isset($_SESSION['user'])) {
         </ul>
       </li>
       <li>
+        <a href="attendance.php">
+          <!--<i class='bx bx-folder' ></i>-->
+          <!--<i class="fa-solid fa-clipboard-user fa-2xs" style="color: #dedede;"></i>-->
+          <i class="fa-solid fa-calendar-days" style="color: #dedede;"></i>
+          <span class="link_name">Attendance</span>
+        </a>
+        <ul class="sub-menu">
+          <li><a class="link_name" href="attendance.php">Attendance</a></li>
+          <li><a href="add_school_year.php">Add School Year</a></li>
+        </ul>
+      </li>
+      <!--<li>
+        <a href="attendance.php">
+          <i class='bx bx-folder' ></i>
+          <i class="fa-solid fa-clipboard-user fa-2xs" style="color: #dedede;"></i>
+          <i class="fa-regular fa-calendar-plus fa-2xs" style="color: #dedede;"></i>
+          <span class="link_name">Yrs in Service</span>
+        </a>
+        <ul class="sub-menu blank">
+          <li><a class="link_name" href="attendance.php">Years in Service</a></li>
+        </ul>
+      </li>-->
+      <?php if ($_SESSION['access_level'] == 'super admin') { ?>
+        <li>
+          <div class="iocn-link">
+            <a href="manage_employee.php">
+            <i class="fa-solid fa-users-between-lines" style="color: #dedede;"></i>
+              <span class="link_name">Manage</span>
+            </a>
+            <i class="fa-solid fa-chevron-down fa-2xs arrow" style="color: #dedede;"></i>
+          </div>
+          <ul class="sub-menu">
+            <li><a class="link_name" href="manage_employee.php">Manage</a></li>
+            <li><a href="manage_employee.php">Manage Employee</a></li>
+            <li><a href="manage_admin.php">Manage Admin</a></li>
+          </ul>
+        </li>
+      <?php } ?>
+      
+      <li>
         <a href="history.php">
-          <i class='bx bx-cart-alt' ></i>
+          <!--<i class='bx bx-cart-alt' ></i>-->
+          <i class="fa-solid fa-clock-rotate-left" style="color: #dedede;"></i>
           <span class="link_name">History</span>
         </a>
         <ul class="sub-menu blank">
           <li><a class="link_name" href="history.php">History</a></li>
         </ul>
       </li>
+      
       <li>
-        <a href="settings.php">
-          <i class='bx bx-cog' ></i>
-          <span class="link_name">Settings</span>
-        </a>
-        <ul class="sub-menu blank">
+        <div class="iocn-link">
+          <a href="settings.php">
+            <i class="fa-solid fa-gear" style="color: #dedede;"></i>
+            <span class="link_name">Settings</span>
+          </a>
+          <i class="fa-solid fa-chevron-down fa-2xs arrow" style="color: #dedede;"></i>
+        </div>
+        <ul class="sub-menu">
           <li><a class="link_name" href="settings.php">Settings</a></li>
+          <li><a href="settings.php">Account Settings</a></li>
+          <li><a href="settings.php">Input Settings</a></li>
+          <?php 
+            if ($_SESSION['access_level'] == 'super admin') {
+              echo '<li><a href="settings.php">Manage Settings</a></li>';
+            }
+          ?>
         </ul>
       </li>
+      <?php }else { ?>
+        <li>
+        <div class="iocn-link">
+          <a href="information.php?control=<?php echo $_SESSION['control_number']; ?>">
+            <i class='bx bx-user' ></i>
+            <span class="link_name">Information</span>
+          </a>
+        </div>
+        <ul class="sub-menu">
+          <li><a class="link_name" href="information.php?control=<?php echo $_SESSION['control_number']; ?>">My Information</a></li>
+        </ul>
+      </li>
+
       <li>
-    <div class="profile-details">
-    <div class="profile-button">
-      <i class="button2"></i>
-      <img class='profile-logo' src="<?php echo "images/".$_SESSION['image']; ?>" alt="">
-    </div>
-      <div class="name-job">
-        <div class="profile_name"><?php echo $_SESSION['name']; ?></div>
-        <div class="job"><?php echo ucwords($_SESSION['access_level']) ?></div>
-      </div>
-      <a href="?logout=true">
-        <i class="bx bx-log-out"></i>
-      </a>
+        <div class="iocn-link">
+          <a href="settings.php">
+            <i class="fa-solid fa-gear" style="color: #dedede;"></i>
+            <span class="link_name">Settings</span>
+          </a>
+          <i class="fa-solid fa-chevron-down fa-2xs arrow" style="color: #dedede;"></i>
+        </div>
+        <ul class="sub-menu">
+          <li><a class="link_name" href="settings.php">Settings</a></li>
+          <li><a href="settings_change_username.php?control=<?php echo $_SESSION['control_number']; ?>">Change Username</a></li>
+          <li><a href="settings_change_password.php?control=<?php echo $_SESSION['control_number']; ?>">Change Password</a></li>
+        </ul>
+      </li>
+        <?php } ?>
       
-    </div>
-  </li>
+
+      <li>
+        <div class="profile-details">
+        <div class="profile-button">
+          <i class="button2"></i>
+          <img class='profile-logo' src="<?php echo "images/".$_SESSION['image']; ?>" alt="">
+        </div>
+          <div class="name-job">
+            <div class="profile_name"><?php echo $_SESSION['name']; ?></div>
+            <div class="job"><?php echo ucwords($_SESSION['access_level']) ?></div>
+          </div>
+          <a href="?logout=true">
+            <!--<i class="bx bx-log-out"></i>-->
+            <i class="fa-solid fa-arrow-right-from-bracket fa-rotate-180 log-out" style="color: #dedede;"></i>
+          </a>
+          
+        </div>
+      </li>
 </ul>
   </div>
   <section class="home-section">

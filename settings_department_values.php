@@ -8,6 +8,7 @@
     }
 
     include 'navbar_hris.php';
+    change_default();
 ?>
 
 <!DOCTYPE html>
@@ -38,7 +39,7 @@
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         margin: auto; /* Center horizontally */
         border: 0.5px solid black;
-        max-height: 600px;
+        max-height: 700px;
         overflow: auto;
     }
 
@@ -94,11 +95,12 @@
     #add_record, #back {
         background-color: #007bff;
         margin-bottom: 10px;
-        margin-top: 10px;
     }
 
     #back {
         background-color: #fc0303;
+        float: right;
+        clear: right;
     }
 
     #back:hover {
@@ -153,10 +155,10 @@
     <form action="" method="POST">
         <h1>
             <span style="color: black;">Department Values</span>  
+            <span><button type="button" id="back" onclick="redirectToSettings()">Back</button></span>
         </h1>
         <div>
         <button type="button" id="add_record" onclick="toggleInputs()">Add Record</button>
-        <button type="button" id="back" onclick="redirectToSettings()">Back</button>
         </div>
         <div id="recordInputs" style="display: none;">
             <label for="value">Enter Department Value:</label>
@@ -199,7 +201,7 @@
                     while ($row = mysqli_fetch_assoc($result)) {
                         echo "<tr data-row-id='row-$i'>";
                         echo "<td>" . $i . "</td>";
-                        if ($i > 12) {
+                        if ($i > 13) {
                             echo "<td><a href='settings_edit_status.php?value_id=" . $row['value_id'] . "'>" . $row['data_value'] . "</a></td>";
                         } else {
                             echo "<td>" . $row['data_value'] . "</td>";

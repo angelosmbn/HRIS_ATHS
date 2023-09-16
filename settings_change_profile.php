@@ -10,6 +10,7 @@
     }
 
     include 'navbar_hris.php';
+    change_default();
 ?>
 <?php 
 
@@ -102,7 +103,7 @@
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         margin: auto; /* Center horizontally */
         border: 0.5px solid black;
-        max-height: 600px;
+        max-height: 700px;
         overflow: auto;
     }
     
@@ -172,7 +173,6 @@
                 <th>
                     <span>Name:</span> <?php echo $_SESSION['name'] ?><br>
                     <span>Control Number</span>: <?php echo $_SESSION['control_number'] ?><br>
-                    <span>Username:</span> <?php echo $_SESSION['username'] ?>
                 </th>
                 <th><img src="images/<?php echo $image ?>" alt="No Image" class="right-label"></th>
             </tr>

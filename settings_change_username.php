@@ -10,26 +10,49 @@
     }
 
     include 'navbar_hris.php';
+    
 ?>
 <?php 
             if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submitRecord']) && $_POST['username'] != "") {
-                $username = $_POST['username'];
+                $username = sha1($_POST['username']);
 
-                if ($username != $_SESSION['username']) {
-                    $sql = "UPDATE user SET username = ? WHERE control_number = ?";
-                    $stmt = $conn->prepare($sql);
-                    $stmt->bind_param("ss", $username, $_SESSION['control_number']);
-                    $stmt->execute();
-                    $stmt->close();
-                    
-                    $success_message = "Successfully changed username.";
-                    $type = "Username Update";
-                    history($_SESSION['control_number'], "Settings", $type);
-                    $_SESSION['username'] = $username;
+                $sql = "SELECT * FROM user WHERE username = ?";
+                $stmt = $conn->prepare($sql);
+                $stmt->bind_param("s", $username);
+                $stmt->execute();
+                $result = $stmt->get_result();
+
+                if (strlen($_POST['username']) >= 6){
+                    if ($username != $_SESSION['username']) {
+                        if ($result->num_rows == 0) {
+                            if ($username != sha1($_SESSION['control_number'])) {
+                                $sql = "UPDATE user SET username = ? WHERE control_number = ?";
+                                $stmt = $conn->prepare($sql);
+                                $stmt->bind_param("ss", $username, $_SESSION['control_number']);
+                                $stmt->execute();
+                                $stmt->close();
+                                
+                                $success_message = "Successfully changed username.";
+                                $type = "Username Update";
+                                history($_SESSION['control_number'], "Settings", $type);
+                                $_SESSION['username'] = $username;
+                            }
+                            else{
+                                $error_message = "Username cannot be the same as the control number.";
+                            }
+                        }
+                        else{
+                            $error_message = "Username already exists.";
+                        }
+                    }
+                    else{
+                        $error_message = "Username is the same as the old one.";
+                    }
                 }
-                else{
-                    $error_message = "Username is the same as the old one.";
+                else {
+                    $error_message = "Username must be at least 6 characters.";
                 }
+                
             }
             else{
                 if (isset($_POST['submitRecord'])){
@@ -66,7 +89,7 @@
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         margin: auto; /* Center horizontally */
         border: 0.5px solid black;
-        max-height: 600px;
+        max-height: 700px;
         overflow: auto;
     }
     
@@ -134,16 +157,15 @@
         <table>
             <tr>
                 <th>
-                    <span>Name:</span> <?php echo $_SESSION['name'] ?><br>
+                    <span>Name:</span> <?php echo $_SESSION['fname'] ?><br>
                     <span>Control Number</span>: <?php echo $_SESSION['control_number'] ?><br>
-                    <span>Username:</span> <?php echo $_SESSION['username'] ?>
                 </th>
                 <th><img src="images/<?php echo $image ?>" alt="No Image" class="right-label"></th>
             </tr>
         </table>
         <br><br>
         <label for="username">New Username:</label>
-        <input type="text" name="username" id="username">
+        <input type="text" name="username" id="username" value="<?php echo isset($_POST['username']) ? $_POST['username'] : ''; ?>">
 
         
         <br>
@@ -156,7 +178,7 @@
             }
         ?>
         <div>
-            <button type="submit" name="submitRecord">Change Password</button>
+        <button type="submit" name="submitRecord">Change Username</button>
             <button type="button" id="cancel" onclick="redirectToSettings()"><?php echo isset($success_message) ? "Back" : "Cancel" ?></button>
         </div>
     </form>
@@ -171,3 +193,13 @@
 </script>
 
 </html>
+<?php 
+    if (check_default() == 1 && !isset($success_message)) {
+        echo '<script>
+            alert("Please Change Your Default Username.");
+            </script>';
+    }
+    if (check_default() != 1 && check_default() != 0) {
+        change_default();
+    }
+?>
