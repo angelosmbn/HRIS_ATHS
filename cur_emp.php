@@ -105,7 +105,7 @@ change_default();
             height: 25px;
             margin-left: 10px;
             border-radius: 3px;
-            border: 1px solid #ccc;
+            border: 1px solid black;
             padding: 1px;
         }
 

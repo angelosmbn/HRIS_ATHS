@@ -97,7 +97,9 @@
         font-weight: bold;
         padding-top: 30px;
     }
-
+    .labels {
+        font-size: 20px;
+    }
 </style>
 
 </head>
@@ -107,7 +109,7 @@
         <h1>Settings</h1>
         <table>
             <tr>
-                <th>
+                <th class="labels">
                     <span>Name:</span> <?php echo $_SESSION['fname'] ?><br>
                     <span>Control Number</span>: <?php echo $_SESSION['control_number'] ?><br>
                 </th>

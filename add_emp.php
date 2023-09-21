@@ -28,6 +28,7 @@
 
         $currentDate = date("Y-m-d");
         $years_service = date_diff(date_create($date_hired), date_create($currentDate))->y;
+        $age = date_diff(date_create($birthday), date_create($currentDate))->y;
 
         $address = $_POST['address'];
         $contact = $_POST['contact'];
@@ -70,12 +71,12 @@
                     $control_number = "RA-" . $year . "-" .($total + 1);
                 }
                 
-                $stmt = $conn->prepare("INSERT INTO employees (control_number, surname, name, middle_name, suffix, birthday, civil_status, gender,
+                $stmt = $conn->prepare("INSERT INTO employees (control_number, surname, name, middle_name, suffix, birthday, age, civil_status, gender,
                                                                 employment_status, classification, date_hired, years_in_service, address, contact,
                                                                 email, course_taken, further_studies, number_of_units, prc_number, prc_exp,
                                                                 position, tin, sss, philhealth, pag_ibig, department)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->bind_param("sssssssssssissssssssssssss", $control_number, $surname, $name, $middle_name, $suffix, $birthday, $civil_status, $gender, $employment_status, $classification, $date_hired, $years_service, $address, $contact, $email, $course_taken, $further_studies, $number_units, $prc_number, $prc_exp, $position, $tin, $sss, $philhealth, $pagibig, $department);
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt->bind_param("ssssssisssssissssssssssssss", $control_number, $surname, $name, $middle_name, $suffix, $birthday, $age, $civil_status, $gender, $employment_status, $classification, $date_hired, $years_service, $address, $contact, $email, $course_taken, $further_studies, $number_units, $prc_number, $prc_exp, $position, $tin, $sss, $philhealth, $pagibig, $department);
                 $stmt->execute();
                 $stmt->close();
 

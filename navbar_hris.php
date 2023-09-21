@@ -185,7 +185,7 @@ $timezone = new DateTimeZone(MY_TIMEZONE);
 
     $sql = "UPDATE employees SET sl=?, vl=? WHERE control_number=?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sss", $sl, $vl, $control_number);
+    $stmt->bind_param("iis", $sl, $vl, $control_number);
   }
 
 ?>
@@ -542,6 +542,7 @@ $timezone = new DateTimeZone(MY_TIMEZONE);
         </div>
         <ul class="sub-menu">
           <li><a class="link_name" href="cur_emp.php">Employees</a></li>
+          <li><a href="celebrants.php">Birthday Celebrants</a></li>
           <li><a href="resigned.php">Resigned Employees</a></li>
           <li><a href="add_emp.php">Add Employees</a></li>
         </ul>
@@ -573,7 +574,7 @@ $timezone = new DateTimeZone(MY_TIMEZONE);
         <li>
           <div class="iocn-link">
             <a href="manage_employee.php">
-            <i class="fa-solid fa-users-between-lines" style="color: #dedede;"></i>
+            <i class="fa-solid fa-user" style="color: #dedede;"></i>
               <span class="link_name">Manage</span>
             </a>
             <i class="fa-solid fa-chevron-down fa-2xs arrow" style="color: #dedede;"></i>

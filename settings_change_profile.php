@@ -111,7 +111,7 @@
         width: 100%;
         margin-top: 10px;
         padding: 5px;
-        border: 1px solid #ccc;
+        border: 1px solid black;
         border-radius: 3px;
     }
     
@@ -161,6 +161,9 @@
     span, label {
         font-weight: bold;
     }
+    .labels {
+        font-size: 20px;
+    }
 </style>
 
 </head>
@@ -170,8 +173,8 @@
         <h1>Change Profile</h1>
         <table>
             <tr>
-                <th>
-                    <span>Name:</span> <?php echo $_SESSION['name'] ?><br>
+                <th class="labels">
+                    <span>Name:</span> <?php echo $_SESSION['fname'] ?><br>
                     <span>Control Number</span>: <?php echo $_SESSION['control_number'] ?><br>
                 </th>
                 <th><img src="images/<?php echo $image ?>" alt="No Image" class="right-label"></th>

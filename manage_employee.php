@@ -163,7 +163,7 @@
         border-collapse: collapse;
         width: 100%;
         font-size: 14px;
-        border: 1px solid #ccc;
+        border: 1px solid black;
     }
 
     .records th, .records td, .records tr {
@@ -173,7 +173,7 @@
         white-space: nowrap;
         height: 0px;
         vertical-align: top;
-        border: 1px solid #ccc;
+        border: 1px solid black;
     }
 
     label {
@@ -200,7 +200,7 @@
 
     input, select{
         min-width: 50%;
-        border: 1px solid #ccc;
+        border: 1px solid black;
         border-radius: 3px;
         margin-left: 15px;
         margin-right: 15px;

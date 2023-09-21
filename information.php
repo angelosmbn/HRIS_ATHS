@@ -292,6 +292,9 @@
         h2 {
             font-weight: 550;
         }
+        .bold {
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -320,61 +323,92 @@
 
                             echo '<td class="center_profile"><img src="images/' . $row['image'] . '" alt="avatar" class="profile1"><br>';
                             
-                            echo "<span style='font-size: 16px;'>" . $row['control_number'] . "</span><br>";
+                            echo (isset($row['control_number'])) ? "<span style='font-size: 16px;'>" . $row['control_number'] . "</span><br>" : "Not Applicable";
+                            //echo "<span style='font-size: 16px;'>" . $row['control_number'] . "</span><br>";
                             echo "</td><td id='personal_td'>";
                             
                             echo "<span style='color: $fontColor; font-size: 30px; font-weight: bold;'>$fullName</span><br>";
-                            echo "Birthday: " . $row['birthday'] . "<br>";
-                            echo "Civil Status: " . $row['civil_status'] . "<br>";
-                            echo "Gender: " . $row['gender'] . "<br>";
-                            echo "Address:<br>";
-                            echo '<textarea name="address" id="address" readonly>' . htmlspecialchars($row['address']) . '</textarea><br>';
+                            
+                            echo "<span class='bold'>Birthday: </span>" . $row['birthday'] . " (" . $row['age'] . ")" ."<br>";
+                            //echo "age: " . $row['age'];
+                            echo "<span class='bold'> Civil Status: </span>" . (($row['civil_status'] == 'single') ? 'Single' : (($row['civil_status'] == 'married') ? 'Married' : (($row['civil_status'] == 'widowed') ? 'Widowed' : (($row['civil_status'] == 'separated') ? 'Separated' : (($row['civil_status'] == 'annulled') ? 'Annulled' : 'Not Applicable'))))) . "<br>";
+                            //echo "Civil Status: " . $row['civil_status'] . "<br>";
+                            
+                            echo "<span class='bold'>Gender: </span>" . $row['gender'] . "<br>";
+                            
+                            echo "<span class='bold'>Address: </span><br>";
+                            echo '<textarea name="address" id="address" readonly>' . (($row['address'] != '') ? htmlspecialchars($row['address']) : 'Not Applicable') . '</textarea><br>';
+                            //echo '<textarea name="address" id="address" readonly>' . htmlspecialchars($row['address']) . '</textarea><br>';
 
-                            echo "Contact: " . $row['contact'] . "<br>";
-                            echo "Email: " . $row['email'] . "<br>";
+                            echo "<span class='bold'>Contact: </span>" . (($row['contact'] != "") ? $row['contact'] : "Not Applicable") . "<br>";
+                            //echo "Contact: " . $row['contact'] . "<br>";
+                            echo "<span class='bold'>Email: </span>" . (($row['email'] != "") ? $row['email'] : "Not Applicable") . "<br>";
+                            //echo "Email: " . $row['email'] . "<br>";
                             echo "</td><tr><td>";
 
                             echo "<h2>Employment Information</h2>";
                             if ($employeeStatus === 'resigned') {
+                                
                                 echo "<span style='color: red'> RESIGNED on " . $row['resignation_date'] . "</span><br>";
-                                echo "Employment Status: ";
+                                echo "<span class='bold'>Employment Status: </span>";
                                 echo $row['employment_status'];
                             } else {
-                                echo "Employment Status: ";
+                                
+                                echo "<span class='bold'>Employment Status: </span>";
                                 echo $row['employment_status'];
                             }
                             
+                            echo "<br><span class='bold'>Classification: </span>" . $row['classification'] . "<br>";
                             
-                        
-                            echo "<br>Classification: " . $row['classification'] . "<br>";
-                            echo "Classification: " . $row['department'] . "<br>";
-                            echo "Position: " . $row['position'] . "<br>";
-                            echo "Date Hired: " . $row['date_hired'] . "<br>";
-                            echo "Years in Service: " . $row['years_in_service'] . "<br>";
+                            echo "<span class='bold'>Department: </span>" . $row['department'] . "<br>";
+                            echo "<span class='bold'>Position: </span>" . (($row['position'] != "") ? $row['position'] : "Not Applicable") . "<br>";
+                            //echo "Position: " . $row['position'] . "<br>";
+                            echo "<span class='bold'>Date Hired: </span>" . (($row['date_hired'] != "") ? $row['date_hired'] : "Not Applicable") . "<br>";
+                            
+                            //echo "Date Hired: " . $row['date_hired'] . "<br>";
+                            echo "<span class='bold'>Years in Service: </span>" . (($row['years_in_service'] != "") ? $row['years_in_service'] : "Not Applicable") . "<br>";
+                            //echo "Years in Service: " . $row['years_in_service'] . "<br>";
                             echo "</td><td>";
 
                             
                             echo "<h2>Educational Background</h2>";
-                            echo "Course Taken: " . $row['course_taken'] . "<br>";
-                            echo "Further Studies: " . $row['further_studies'] . "<br>";
-                            echo "Number of Units: " . $row['number_of_units'] . "<br>";
-                            echo "PRC Number: " . $row['prc_number'] . "<br>";
-                            echo "PRC Expiration: " . $row['prc_exp'] . "<br>";
+                            echo "<span class='bold'>Course Taken: </span>" . (($row['course_taken'] != "") ? $row['course_taken'] : "Not Applicable") . "<br>";
+                            //echo "Course Taken: " . $row['course_taken'] . "<br>";
+                            echo "<span class='bold'>Further Studies: </span>" . (($row['further_studies'] != "") ? $row['further_studies'] : "Not Applicable") . "<br>";
+                            //echo "Further Studies: " . $row['further_studies'] . "<br>";
+                            echo "<span class='bold'>Number of Units: </span>" . (($row['number_of_units'] != "0") ? $row['number_of_units'] : "Not Applicable") . "<br>";
+                            //echo "Number of Units: " . $row['number_of_units'] . "<br>";
+                            echo "<span class='bold'>PRC Number: </span>" . (($row['prc_number'] != "") ? $row['prc_number'] : "Not Applicable") . "<br>";
+                            //echo "PRC Number: " . $row['prc_number'] . "<br>";
+                            echo "<span class='bold'>PRC Expiration: </span>" . (($row['prc_exp'] != "0000-00-00") ? $row['prc_exp'] : "Not Applicable") . "<br>";
+                            //echo "PRC Expiration: " . $row['prc_exp'] . "<br>";
                             echo "</td></tr><td>";
 
                             echo "<h2>Attendance</h2>";
-                            echo "Total Absent: " . $totalAbsent . "<br>";
-                            echo "Total Late: " . $totalLate . "<br>";
-                            echo "Total Undertime: " . $totalUndertime . "<br>";
-                            echo "Total Leave: " . $row['vl'] + $row['sl'] . "<br>";
-                            echo "Remaining Leave: " . (($row['remaining_leave'] > 0) ? $row['remaining_leave'] : (($row['remaining_leave'] == 0) ? abs($row['remaining_leave']) : "(" . $row['remaining_leave'] . ")")) . "<br>";
+                            
+                            echo "<span class='bold'>Total Absent: </span>" . $totalAbsent . "<br>";
+                            
+                            echo "<span class='bold'>Total Late: </span>" . $totalLate . "<br>";
+                            
+                            echo "<span class='bold'>Total Undertime: </span>" . $totalUndertime . "<br>";
+                            
+                            echo "<span class='bold'>Total Leave: </span>" . $row['vl'] + $row['sl'] . "<br>";
+                            
+                            echo "<span class='bold'>Remaining Leave: </span>" . (($row['remaining_leave'] > 0) ? $row['remaining_leave'] : (($row['remaining_leave'] == 0) ? abs($row['remaining_leave']) : "(" . $row['remaining_leave'] . ")")) . "<br>";
                             echo "</td><td>";
 
                             echo "<h2>Other Information</h2>";
-                            echo "TIN: " . $row['tin'] . "<br>";
-                            echo "SSS: " . $row['sss'] . "<br>";
-                            echo "PHILHEALTH: " . $row['philhealth'] . "<br>";
-                            echo "PAG-IBIG: " . $row['pag_ibig'] . "<br>";
+                            if ($_SESSION['access_level'] == 'super admin') {
+                                echo "<span class='bold'>Salary: </span>" . (($row['date_hired'] != "") ? "18,000" : "Not Applicable") . "<br>";
+                            }
+                            echo "<span class='bold'>Tin: </span>" . (($row['tin'] != "") ? $row['tin'] : "Not Applicable") . "<br>";
+                            //echo "TIN: " . $row['tin'] . "<br>";
+                            echo "<span class='bold'>SSS: </span>" . (($row['sss'] != "") ? $row['sss'] : "Not Applicable") . "<br>";
+                            //echo "SSS: " . $row['sss'] . "<br>";
+                            echo "<span class='bold'>PHILHEALTH: </span>" . (($row['philhealth'] != "") ? $row['philhealth'] : "Not Applicable") . "<br>";
+                            //echo "PHILHEALTH: " . $row['philhealth'] . "<br>";
+                            echo "<span class='bold'>PAG-IBIG: </span>" . (($row['pag_ibig'] != "") ? $row['pag_ibig'] : "Not Applicable") . "<br>";
+                            //echo "PAG-IBIG: " . $row['pag_ibig'] . "<br>";
                             echo "</td>";
 
                             

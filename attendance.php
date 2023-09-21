@@ -335,7 +335,7 @@ if (isset($_POST['updateAttendance'])) {
         }
         td input {
             width: 100%;
-            border: 1px solid #ccc;
+            border: 1px solid black;
             border-radius: 3px;
         }
         td.input_td, td.abs_td {
@@ -474,6 +474,7 @@ if (isset($_POST['updateAttendance'])) {
                         $departmentOrder[] = $row['data_value'];
                     }
                 }
+                
                 
                 $sql = "SELECT * FROM employees WHERE status = 'active' ";
 

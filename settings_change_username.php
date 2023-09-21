@@ -97,7 +97,7 @@
         width: 100%;
         margin-top: 10px;
         padding: 5px;
-        border: 1px solid #ccc;
+        border: 1px solid black;
         border-radius: 3px;
     }
     
@@ -147,6 +147,9 @@
     span, label {
         font-weight: bold;
     }
+    .labels {
+        font-size: 20px;
+    }
 </style>
 
 </head>
@@ -156,7 +159,7 @@
         <h1>Change Username</h1>
         <table>
             <tr>
-                <th>
+                <th class="labels">
                     <span>Name:</span> <?php echo $_SESSION['fname'] ?><br>
                     <span>Control Number</span>: <?php echo $_SESSION['control_number'] ?><br>
                 </th>

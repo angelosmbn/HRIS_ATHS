@@ -5,7 +5,7 @@
         header("Location: login_hris.php");
         exit();
     }
-    $conn = new mysqli('localhost', 'root', '', 'sa4');
+    $conn = new mysqli('localhost', 'root', '', 'hris');
     $user = isset($_SESSION['user']) ? $_SESSION['user'] : null;
     $name = ""; // Initialize the variable
     $surname = $user['surname'];
@@ -74,7 +74,7 @@
             if ($less_years_service != 0) {
                 $years_service = $years_service - $less_years_service;
             }
-    
+
             // Update the years_in_service column in the database
             $updateSql = "UPDATE employees SET years_in_service = ? WHERE control_number = ?";
             $updateStmt = $conn->prepare($updateSql);
@@ -85,7 +85,32 @@
     
         $stmt->close();
     }
+
+    function incrementAge($conn, $timezone) {
+        $sql_years = "SELECT * FROM employees";
+        $stmt = $conn->prepare($sql_years);
+        $stmt->execute();
+        $result = $stmt->get_result();
     
+        while ($row = $result->fetch_assoc()) {
+            $birthday = $row['birthday'];
+            $today = new DateTime();
+            $today->setTimezone($timezone);
+
+            $my_birthday = new DateTime($birthday, $timezone);
+            $age = $my_birthday->diff($today)->y;
+    
+            // Update the years_in_service column in the database
+            $updateSql = "UPDATE employees SET age = ? WHERE control_number = ?";
+            $updateStmt = $conn->prepare($updateSql);
+            $updateStmt->bind_param("is", $age, $row['control_number']);
+            $updateStmt->execute();
+            $updateStmt->close();
+        }
+    
+        $stmt->close();
+    }
+    incrementAge($conn,$timezone);
     incrementYIS($conn,$timezone);
   ?>
 

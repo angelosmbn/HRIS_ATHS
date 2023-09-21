@@ -54,7 +54,7 @@
         display: relative;
         text-align: left;
         padding: 8px;
-        border: 1px solid #ddd;
+        border: 1px solid black;
         white-space: nowrap;
         height: 0px;
         vertical-align: top;
@@ -79,7 +79,7 @@
         width: 100%;
         margin-top: 10px;
         padding: 5px;
-        border: 1px solid #ccc;
+        border: 1px solid black;
         border-radius: 3px;
     }
 

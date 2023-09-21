@@ -185,10 +185,22 @@
                                 if ($less_years_service != 0 && ($old_less_years_service != $less_years_service)) {
                                     $years_service = $years_service - $less_years_service;
                                 }
+                                if ($birthday != $old_birthday) {
+                                    $currentDate = date("Y-m-d");
+                                    $age = date_diff(date_create($birthday), date_create($currentDate))->y;
+                                }
+                                else {
+                                    $age = $rows['age'];
+                                }
 
-                                $stmt = $conn->prepare("UPDATE employees SET control_number=?, surname=?, name=?, middle_name=?, suffix=?, birthday=?, civil_status=?, gender=?, employment_status=?, classification=?, date_hired=?, years_in_service=?, address=?, contact=?, email=?, course_taken=?, further_studies=?, number_of_units=?, prc_number=?, prc_exp=?, position=?, tin=?, sss=?, philhealth=?, pag_ibig=?, department=?, less_yis=? WHERE control_number=?");
-                                $stmt->bind_param("sssssssssssissssssssssssssis", $new_control_number, $surname, $name, $middle_name, $suffix, $birthday, $civil_status, $gender, $employment_status, $classification, $date_hired, $years_service, $address, $contact, $email, $course_taken, $further_studies, $number_units, $prc_number, $prc_exp, $position, $tin, $sss, $philhealth, $pagibig, $department, $less_years_service, $control_number);
+                                $stmt = $conn->prepare("UPDATE employees SET control_number=?, surname=?, name=?, middle_name=?, suffix=?, birthday=?, age=?, civil_status=?, gender=?, employment_status=?, classification=?, date_hired=?, years_in_service=?, address=?, contact=?, email=?, course_taken=?, further_studies=?, number_of_units=?, prc_number=?, prc_exp=?, position=?, tin=?, sss=?, philhealth=?, pag_ibig=?, department=?, less_yis=? WHERE control_number=?");
+                                $stmt->bind_param("ssssssisssssissssssssssssssis", $new_control_number, $surname, $name, $middle_name, $suffix, $birthday, $age, $civil_status, $gender, $employment_status, $classification, $date_hired, $years_service, $address, $contact, $email, $course_taken, $further_studies, $number_units, $prc_number, $prc_exp, $position, $tin, $sss, $philhealth, $pagibig, $department, $less_years_service, $control_number);
                                 $stmt->execute();
+                                
+                                $stmt_user = $conn->prepare("UPDATE user SET control_number=?, surname=?, name=?, middle_name=?, suffix=? WHERE control_number = ?");
+                                $stmt_user->bind_param("ssssss", $new_control_number, $surname, $name, $middle_name, $suffix, $control_number);
+                                $stmt_user->execute();
+                                $stmt_user->close();
 
                                 if ($old_classification != $classification || $old_employment_status != $employment_status) {
                                     updateSLVL($conn, $new_control_number, $employment_status, $classification);
@@ -233,7 +245,9 @@
                                     $stmt->close();
                                 }
                                 $control_number = $new_control_number;
-
+                                if ($_SESSION['control_number'] == $control_number) {
+                                    $_SESSION['control_number'] = $new_control_number;
+                                }
 
                             }
                         }
@@ -343,6 +357,15 @@
                                     $stmt->execute();
                                     $stmt->close();
 
+                                    $stmt_user = $conn->prepare("UPDATE user SET image = ? WHERE control_number = ?");
+                                    $stmt_user->bind_param("ss", $uniqueFilename, $control_number);
+                                    $stmt_user->execute();
+                                    $stmt_user->close();
+
+                                    if ($_SESSION['control_number'] == $control_number) {
+                                        $_SESSION['image'] = $uniqueFilename;
+                                    }
+
                                     if (isset($type)){
                                         $type .= ", Profile Updated";
                                     }
@@ -391,6 +414,7 @@
         $middle_name = $row['middle_name'];
         $suffix = $row['suffix'];
         $birthday = $row['birthday'];
+        $age = $row['age'];
         $civil_status = $row['civil_status'];
         $gender = $row['gender'];
         $employment_status = $row['employment_status'];
