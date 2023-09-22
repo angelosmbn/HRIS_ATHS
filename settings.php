@@ -100,6 +100,7 @@
     .labels {
         font-size: 20px;
     }
+    
 </style>
 
 </head>
@@ -122,9 +123,10 @@
             </tr>
             <tr>
                 <th><a href="settings_change_username.php">Change Username</a><br>
+                <th></th>
                 <th> <a href="settings_change_password.php">Change Password</a><br>
                 <?php if ($_SESSION['access_level'] == 'super admin' || $_SESSION['access_level'] == 'admin') { ?>
-                <th><a href="settings_change_profile.php">Change Profile</a><br>
+                <!--<th><a href="settings_change_profile.php">Change Profile</a><br>-->
             </tr>
             <tr>
                 <td colspan="3">Input Settings</td>
@@ -143,8 +145,10 @@
                         </tr>
                         <tr>";
                         //echo "<a href='increment_years.php'>Increment Years of Service</a><br>";
+                        echo '<th><button id="reset_leave" onclick="deleteAttendanceRecordConfirmation()">Delete All Attendance Record</button>';
+                        echo '<th></th>';
                         echo '<th><button id="reset_leave" onclick="resetLeaveConfirmation()">Reset Leave Credits</button><br>';
-                        echo '<th colspan="2"><button id="reset_leave" onclick="deleteAttendanceRecordConfirmation()">Delete All Attendance Record</button>';
+                        
                     }
                 ?>
             </tr>

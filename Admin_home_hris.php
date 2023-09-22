@@ -11,7 +11,7 @@
     $surname = $user['surname'];
     $firstLetter = substr($surname, 0, 1);
     $name = $user['name'] . " " . $firstLetter . ".";
-    $fname = $user['name'] . ($user['middle_name'] != "" ? " " . $user['middle_name'] . " " : "") . $user['surname'];
+    $fname = $user['surname'] . ', ' . $user['name'] . ($user['middle_name'] != "" ? ' ' . $user['middle_name'] : '');
     $_SESSION['name'] = $name;
     $_SESSION['fname'] = $fname;
     $_SESSION['control_number'] = $user['control_number'];

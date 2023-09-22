@@ -6,12 +6,23 @@
         header("Location: login_hris.php");
         exit();
     }
-    
+    if ($_SESSION['access_level'] == 'employee') {
+        echo '<script>
+                alert("Invalid Access.");
+                window.location="information.php?control=' . $_SESSION['control_number'] . '";
+            </script>';
+        exit;
+    }
     include 'navbar_hris.php';
     change_default();
 
     if (isset($_GET['value_id'])) {
         $value_id = $_GET['value_id'];   
+    }else{
+        echo '<script>
+                alert("Please select the value you want to edit.");
+                window.location="settings.php"
+            </script>';
     }
 
     $sql = "SELECT * FROM data_values WHERE value_id = ?";

@@ -6,7 +6,13 @@
         header("Location: login_hris.php");
         exit();
     }
-
+    if ($_SESSION['access_level'] == 'employee') {
+        echo '<script>
+                alert("Invalid Access.");
+                window.location="information.php?control=' . $_SESSION['control_number'] . '";
+            </script>';
+        exit;
+    }
     include 'navbar_hris.php';
     change_default();
 ?>

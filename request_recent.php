@@ -30,19 +30,18 @@ change_default();
             background-size: cover; /* Ensure the background covers the entire body */
             background-repeat: no-repeat; /* Prevent background image from repeating */
             background-position: center; /* Center the background image */
+            background-attachment: fixed;
         }
-
         .container {
             background-color: #fff;
             border: 1px solid grey;
             border-radius: 5px 0 0 0;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             margin: 20px auto 0;
-            max-height: 750px;
+            max-height: 700px;
             overflow-y: auto;
-            width: 95%;grey
+            width: 95%;
         }
-
         .container::-webkit-scrollbar {
             width: 10px;
             height: 15px;
@@ -60,35 +59,31 @@ change_default();
         .container tr:nth-child(even) {
             background-color: #f2f2f2;
         }
-        
+
         table {
             border-collapse: collapse;
-            width: auto;
+            width: 100%;
             font-size: 14px;
         }
-
         th, td {
             display: relative;
             text-align: left;
             padding: 8px;
-            border: 1px solid #ccc;
+            border: 1px solid #ddd;
             white-space: nowrap;
-            height: auto;
+            height: 0px;
         }
-
         th{
             background: bisque;
         }
-
         form td{
             border: none;
         }
-
         .fixed-row {
             position: sticky;
             top: 0;
             background-color: #f0f0f0;
-            z-index: 1000;
+            z-index: 1000; /* Make sure the fixed row appears above other content */
         }
 
         .scrollable-content {
@@ -107,7 +102,7 @@ change_default();
             margin: auto;
             margin-top: -20px;
             font-weight: bold;
-            overflow: hidden;
+            overflow: auto;
         }
         .highlighted-row {
             background-color: #5cabff;
@@ -134,23 +129,20 @@ change_default();
         button:hover {
             background-color: #0056b3;
         }
-        #name{
-            width: 203px;
-        }
-        #years_service{
-            width: 55px;
-        }
-        #civil_status{
-            width: 140px;
-        }
-        #gender{
-            width: 115px;
-        }
         #year{
+            width: 157px;
+        }
+        #specific_date{
+            width: 180px;
+        }
+        #num{
             width: 178px;
         }
+        #type{
+            width: 260px;
+        }
         .search-bar{
-            width: 1000px;
+            width: 70%;
         }
     </style>
 </head>
@@ -160,33 +152,53 @@ change_default();
         <form action="" method="POST">
             <table class="search-bar">
             <tr>
-            <td colspan="2" rowspan="2"><h1>Resigned Employees</h1></td>
-            <td><td></td></td>
-            <td><td></td></td>
+            <td colspan="2" rowspan="2"><h1>Recent Request</h1></td>
             <td><td></td></td>
             <td>
-            <label for="name">Search Name:</label>
-            <input type="text" name="name" id="name" placeholder="Search Name"
-            value="<?php echo isset($_POST['name']) ? $_POST['name'] : '' ?>"></input>
+            <label for="admin_id">Admin ID:</label>
+            <input type="text" name="admin_id" id="admin_id" placeholder="Search Admin ID"
+            value="<?php echo isset($_POST['admin_id']) ? $_POST['admin_id'] : '' ?>"></input>
             </td>
-            <td rowspan="2"><button type="submit">Search</button>
-            <button type="reset" onclick="resetSearchInput()">Reset</button>
+            <td>
+            <label for="employee_id">Employee ID:</label>
+            <input type="text" name="employee_id" id="employee_id" placeholder="Search Employee ID"
+            value="<?php echo isset($_POST['employee_id']) ? $_POST['employee_id'] : '' ?>"></input>
+            </td>
+            <td>
+            <label for="type">Type:</label>
+            <select name="type" id="type">
+                <option value="">Select Type</option>
+                <option value="Pending Request" <?php if (isset($_POST['type']) && $_POST['type'] === "Pending Request") echo "selected"; ?>>Pending Request</option>
+                <option value="Accept Request" <?php if (isset($_POST['type']) && $_POST['type'] === "Accept Request") echo "selected"; ?>>Accept Request</option>
+                <option value="Decline Request" <?php if (isset($_POST['type']) && $_POST['type'] === "Decline Request") echo "selected"; ?>>Decline Request</option>
+            </select>
+
+            </td>
+            <td rowspan="2">
+                <button type="submit">Search</button>
+                <button type="reset" onclick="resetSearchInput()">Reset</button>
             </td>
             </tr>
             <tr>
             <td><td></td></td>
-            <td><td></td></td>
-            <td><td></td></td>
             <td>
-            <label for="year">Resignation Year: </label>
-            <input type="text" id="year" name="year" placeholder="Search Year"
+            <label for="year">Enter Year: </label>
+            <input type="number" id="year" name="year" min="1900" max="2099" step="1" placeholder="Enter Year"
             value="<?php echo isset($_POST['year']) ? $_POST['year'] : '' ?>">
+            </td>
+            <td>
+            <label for="specific_date">Enter Date: </label>
+            <input type="date" id="specific_date" name="specific_date"
+            value="<?php echo isset($_POST['specific_date']) ? $_POST['specific_date'] : '' ?>">
+            </td>
+            <td>
+                <label for="num">Number to Show: </label>
+                <input type="number" id="num" name="num" step="1" value="<?php echo isset($_POST['num']) ? $_POST['num'] : '100' ?>">
             </td>
             </tr>
             </table>
             
 
-            
         </form>
         
         <div class="container">
@@ -194,12 +206,12 @@ change_default();
             <thead>
             <tr class="fixed-row">
             <th>#</th>
-            <th>Control Number</th><th>Resignation Date</th><th>Surname</th><th>Name</th><th>Middle Name</th><th>Suffix</th>
-            <th>Birthday</th><th>Civil Status</th><th>Gender</th><th>Employment Status</th>
-            <th>Classification</th><th>Date Hired</th><th>Years in Service</th><th>Address</th>
-            <th>Contact Number</th><th>Email Address</th><th>Course Taken</th><th>Further Studies</th>
-            <th>Number of Units</th><th>PRC number</th><th>Valid Until</th><th>Position</th>
-            <th>Tin</th><th>SSS</th><th>PHILHEALTH</th><th>PAG-IBIG</th>
+            <th>Admin ID</th>
+            <th>Admin Name</th>
+            <th>Employee ID</th>
+            <th>Employee Name</th>
+            <th>Type</th>
+            <th>Timestamp</th>
             </tr>
             </thead>
             <?php 
@@ -207,74 +219,77 @@ change_default();
                     die("Connection failed: " . $conn->connect_error);
                 }
 
-                $sql = "SELECT * FROM employees WHERE status = 'resigned'";
+                $sql = "SELECT * FROM recent_request";
                 // Check if search input is provided
-                if (isset($_POST['name']) && !empty($_POST['name'])) {
-                    $search_name = $_POST['name'];
-                    // Add all possible combinations of name search to the SQL query
-                    $sql .= " AND (CONCAT(name, ' ', middle_name, ' ', surname) LIKE '%$search_name%'
-                    OR CONCAT(surname, ' ', name, ' ', middle_name) LIKE '%$search_name%'
-                    OR CONCAT(surname, ' ', name) LIKE '%$search_name%'
-                    OR CONCAT(name, ' ', surname) LIKE '%$search_name%'
-                    OR CONCAT(middle_name, ' ', name) LIKE '%$search_name%'
-                    OR CONCAT(middle_name, ' ', surname) LIKE '%$search_name%'
-                    OR CONCAT(surname, ' ', middle_name) LIKE '%$search_name%')";
+                if (isset($_POST['admin_id']) && !empty($_POST['admin_id'])) {
+                    $search_admin_id = $_POST['admin_id'];
+                    $sql .= " WHERE admin_id = '$search_admin_id'";
+                }
+                if (isset($_POST['employee_id']) && !empty($_POST['employee_id'])) {
+                    if (isset($_POST['admin_id']) && !empty($_POST['admin_id'])){
+                        $sql .= " AND";
+                    } else {
+                        $sql .= " WHERE";
+                    }
+
+                    $search_employee_id = $_POST['employee_id'];
+                    $sql .= " employee_id = '$search_employee_id'";
                 }
                 if (isset($_POST['year']) && !empty($_POST['year'])) {
+                    if (isset($_POST['admin_id']) && !empty($_POST['admin_id']) || isset($_POST['employee_id']) && !empty($_POST['employee_id'])){
+                        $sql .= " AND";
+                    } else {
+                        $sql .= " WHERE";
+                    }
                     $filteredYear = intval($_POST['year']);
-                    $sql .= " AND YEAR(resignation_date) = $filteredYear";
+                    $sql .= " YEAR(timestamp) = $filteredYear";
+                }
+                if (isset($_POST['specific_date']) && !empty($_POST['specific_date'])) {
+                    if (isset($_POST['admin_id']) && !empty($_POST['admin_id']) || isset($_POST['year']) && !empty($_POST['year']) || isset($_POST['employee_id']) && !empty($_POST['employee_id'])){
+                        $sql .= " AND";
+                    } else {
+                        $sql .= " WHERE";
+                    }
+                    $filteredDate = $_POST['specific_date'];
+                    $sql .= " DATE(timestamp) = '$filteredDate'";
+                }
+                if (isset($_POST['type']) && !empty($_POST['type'])) {
+                    if (isset($_POST['admin_id']) && !empty($_POST['admin_id']) || isset($_POST['year']) && !empty($_POST['year']) || isset($_POST['employee_id']) && !empty($_POST['employee_id']) || isset($_POST['specific_date']) && !empty($_POST['specific_date'])){
+                        $sql .= " AND";
+                    } else {
+                        $sql .= " WHERE";
+                    }
+                    $filteredType = $_POST['type'];
+                    $sql .= " type LIKE '%$filteredType%'";
                 }
                 
-            
+                $sql .= " ORDER BY timestamp DESC LIMIT ";
+                if (isset($_POST['num']) && !empty($_POST['num'])){
+                    $sql .= $_POST['num'];
+                }else{
+                    $sql .= 100;
+                }
                 $result = $conn->query($sql);
+                
                 $i = 1;
                 if ($result->num_rows > 0) {
                         echo '<tbody class="scrollable-content">';
                     while($row = mysqli_fetch_assoc($result)) {
                         echo "<tr data-row-id='row-$i'>";
-                        $resignation_date = $row['resignation_date'];
-                        $formattedResignationDate = date('M j, Y', strtotime($resignation_date));
-                        $birthday = $row['birthday'];
-                        $formattedBirthday = date('M j, Y', strtotime($birthday));
-                        $date_hired = $row['date_hired'];
-                        $formattedDateHired = date('M j, Y', strtotime($date_hired));
-                        $prc_exp = $row['prc_exp'];
-                        $formattedPrcExp = date('M j, Y', strtotime($prc_exp));
                         echo "<td> $i </td>";
-                        echo '<td><a href="information.php?control=' . $row['control_number'] . '">' . $row['control_number'] . '</a></td>';
-                        echo "<td>$formattedResignationDate</td>";
-                        echo "<td>{$row['surname']}</td>";
-                        echo "<td>{$row['name']}</td>";
-                        echo "<td>{$row['middle_name']}</td>";
-                        echo "<td>{$row['suffix']}</td>";
-                        echo "<td>$formattedBirthday</td>";
-                        echo "<td>{$row['civil_status']}</td>";
-                        echo "<td>{$row['gender']}</td>";
-                        echo "<td>{$row['employment_status']}</td>";
-                        echo "<td>{$row['classification']}</td>";
-                        echo "<td>$formattedDateHired</td>";
-                        echo "<td>{$row['years_in_service']}</td>";
-                        echo "<td>{$row['address']}</td>";
-                        echo "<td>{$row['contact']}</td>";
-                        echo "<td>{$row['email']}</td>";
-                        echo "<td>{$row['course_taken']}</td>";
-                        echo "<td>{$row['further_studies']}</td>";
-                        echo "<td>{$row['number_of_units']}</td>";
-                        echo "<td>{$row['prc_number']}</td>";
-                        echo "<td>$formattedPrcExp</td>";
-                        echo "<td>{$row['position']}</td>";
-                        echo "<td>{$row['tin']}</td>";
-                        echo "<td>{$row['sss']}</td>";
-                        echo "<td>{$row['philhealth']}</td>";
-                        echo "<td>{$row['pag_ibig']}</td>";
+                        echo "<td>{$row['admin_id']}</td>";
+                        echo "<td>{$row['admin_name']}</td>";
+                        echo "<td>{$row['employee_id']}</td>";
+                        echo "<td>{$row['employee_name']}</td>";
+                        echo "<td>{$row['type']}</td>";
+                        echo "<td>" . date('M j, Y \a\t g:i a', strtotime($row['timestamp'])) . "</td>";
                         echo "</tr>";
                         $i++;
                     }
                         echo '</tbody>';
                 }
                 else {
-                    echo "<tr><td colspan='24'>0 results</td></tr>";
-                    
+                    echo "<tr><td colspan='5'>0 results</td></tr>";
                 }
                 
             ?>
@@ -289,8 +304,12 @@ change_default();
 <script>
         function resetSearchInput() {
             // Reset the search input field
-            document.getElementById("name").value = "";
+            document.getElementById("admin_id").value = "";
+            document.getElementById("employee_id").value = "";
             document.getElementById("year").value = "";
+            document.getElementById("specific_date").value = "";
+            document.getElementById("type").value = "";
+            document.getElementById("num").value = "100";
             // Submit the form to show unfiltered data
             document.forms[0].submit();
         }

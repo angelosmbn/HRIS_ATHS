@@ -12,6 +12,11 @@
     
     if (isset($_GET['control'])) {
         $control_number = $_GET['control'];
+    }else{
+        echo '<script>
+                alert("Please Select an Employee.");
+                window.location="cur_emp.php"
+            </script>';
     }
 
     if (!empty($control_number)) {
@@ -239,7 +244,12 @@
                         $string = explode(', ', $row['information']);
                         $formatted_string = implode("<br>", $string);
                         echo "<tr data-row-id='row-$i'>";
-                        echo "<td><a href='edit_service_record.php?service_id=" . $row['service_id'] . "'>" . $row['school_year'] . "</a></td>";
+                        if ($_SESSION['access_level'] != 'employee'){
+                            echo "<td><a href='edit_service_record.php?service_id=" . $row['service_id'] . "'>" . $row['school_year'] . "</a></td>";
+                        }else{
+                            echo "<td>" . $row['school_year'] . "</td>";
+                        }
+                       
                         echo "<td>" . $row['status'] . "</td>";
                         echo "<td>" . $formatted_string . "</td>";
                         echo "</tr>";

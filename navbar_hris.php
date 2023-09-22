@@ -9,7 +9,7 @@ $timezone = new DateTimeZone(MY_TIMEZONE);
 ?>
 
 <?php 
-   $conn = new mysqli('localhost', 'root', '', 'hris');
+   $conn = new mysqli('localhost', 'root', 'assumpta_hris', 'hris');
    // Logout logic
    if (isset($_GET['logout'])) {
     session_destroy();
@@ -18,7 +18,7 @@ $timezone = new DateTimeZone(MY_TIMEZONE);
   }
 
   function history($admin_id, $employee_id, $type) {
-    $conn = new mysqli('localhost', 'root', '', 'hris');
+    $conn = new mysqli('localhost', 'root', 'assumpta_hris', 'hris');
 
     //Get Admin Name
     $get_admin_name = $conn->prepare("SELECT * FROM user WHERE control_number = ?");
@@ -64,7 +64,7 @@ $timezone = new DateTimeZone(MY_TIMEZONE);
   }
 
   function change_default() {
-    $conn = new mysqli('localhost', 'root', '', 'hris');
+    $conn = new mysqli('localhost', 'root', 'assumpta_hris', 'hris');
     if (true) {
       $sql = "SELECT * FROM user WHERE control_number = ?";
       $stmt = $conn->prepare($sql);
@@ -109,8 +109,8 @@ $timezone = new DateTimeZone(MY_TIMEZONE);
   }
 
   function check_default() {
-    $conn = new mysqli('localhost', 'root', '', 'hris');
-    if ($_SESSION['access_level'] == 'employee') {
+    $conn = new mysqli('localhost', 'root', 'assumpta_hris', 'hris');
+
       $sql = "SELECT * FROM user WHERE control_number = ?";
       $stmt = $conn->prepare($sql);
       $stmt->bind_param("s", $_SESSION['control_number']);
@@ -147,7 +147,7 @@ $timezone = new DateTimeZone(MY_TIMEZONE);
         }
       }
 
-    }
+    
   }
 
   function updateSLVL($conn, $control_number, $employment_status, $classification) {
@@ -570,6 +570,18 @@ $timezone = new DateTimeZone(MY_TIMEZONE);
           <li><a class="link_name" href="attendance.php">Years in Service</a></li>
         </ul>
       </li>-->
+      <li>
+        <a href="request.php">
+          <!--<i class='bx bx-folder' ></i>-->
+          <!--<i class="fa-solid fa-clipboard-user fa-2xs" style="color: #dedede;"></i>-->
+          <i class="fa-solid fa-envelope" style="color: #dedede;"></i>
+          <span class="link_name">Request</span>
+        </a>
+        <ul class="sub-menu">
+          <li><a class="link_name" href="request.php">Request</a></li>
+          <li><a href="request_recent.php">Recent Request</a></li>
+        </ul>
+      </li>
       <?php if ($_SESSION['access_level'] == 'super admin') { ?>
         <li>
           <div class="iocn-link">

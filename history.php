@@ -5,6 +5,13 @@ if (!isset($_SESSION['user'])) {
     header("Location: login_hris.php");
     exit();
 }
+if ($_SESSION['access_level'] == 'employee') {
+    echo '<script>
+            alert("Invalid Access.");
+            window.location="information.php?control=' . $_SESSION['control_number'] . '";
+        </script>';
+    exit;
+}
 include 'navbar_hris.php';
 change_default();
 ?>
@@ -31,7 +38,7 @@ change_default();
             border-radius: 5px 0 0 0;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             margin: 20px auto 0;
-            max-height: 700px;
+            max-height: 750px;
             overflow-y: auto;
             width: 95%;
         }
@@ -292,7 +299,7 @@ change_default();
                         echo "<td>{$row['employee_id']}</td>";
                         echo "<td>{$row['employee_name']}</td>";
                         echo "<td>{$row['type']}</td>";
-                        echo "<td>{$row['timestamp']}</td>";
+                        echo "<td>" . date('M j, Y \a\t g:i a', strtotime($row['timestamp'])) . "</td>";
                         echo "</tr>";
                         $i++;
                     }

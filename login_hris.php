@@ -17,7 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $user_access = "employee";
     $status = "active";
 
-    $conn = new mysqli('localhost', 'root', '', 'hris');
+    $conn = new mysqli('localhost', 'root', 'assumpta_hris', 'hris');
     if ($conn->connect_error) {
         $error_message = 'Unable to connect to the database. Please try again later.';
         die("Connection failed: " . $conn->connect_error);

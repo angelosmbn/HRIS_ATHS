@@ -1,5 +1,5 @@
 <?php
-$conn = new mysqli('localhost', 'root', '', 'hris');
+$conn = new mysqli('localhost', 'root', 'assumpta_hris', 'hris');
 
 // Check connection
 if ($conn->connect_error) {

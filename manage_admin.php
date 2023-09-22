@@ -6,6 +6,13 @@
         header("Location: login_hris.php");
         exit();
     }
+    if ($_SESSION['access_level'] != 'super admin') {
+        echo '<script>
+                alert("Invalid Access!");
+                window.location="Admin_home_hris.php"
+            </script>';
+        exit;
+    }
 
     include 'navbar_hris.php';
     change_default();
@@ -276,7 +283,7 @@
 
     .fixed-row {
         position: sticky;
-        top: 0;
+        top: -20px;
         background-color: #f0f0f0;
         z-index: 0; /* Make sure the fixed row appears above other content */
     }

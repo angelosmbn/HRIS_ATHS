@@ -13,7 +13,8 @@
     // Check if 'control' parameter is provided in the URL
     if (isset($_GET['control'])) {
         $control_number = $_GET['control'];
-    }else{
+    }
+    else{
         echo '<script>
             alert("Please Select Employee.");
             window.location="cur_emp.php";
@@ -329,7 +330,8 @@
                             
                             echo "<span style='color: $fontColor; font-size: 30px; font-weight: bold;'>$fullName</span><br>";
                             
-                            echo "<span class='bold'>Birthday: </span>" . $row['birthday'] . " (" . $row['age'] . ")" ."<br>";
+                            $formattedBirthday = date('F j, Y', strtotime($row['birthday']));
+                            echo "<span class='bold'>Birthday: </span>" . $formattedBirthday . " (" . $row['age'] . ")" ."<br>";
                             //echo "age: " . $row['age'];
                             echo "<span class='bold'> Civil Status: </span>" . (($row['civil_status'] == 'single') ? 'Single' : (($row['civil_status'] == 'married') ? 'Married' : (($row['civil_status'] == 'widowed') ? 'Widowed' : (($row['civil_status'] == 'separated') ? 'Separated' : (($row['civil_status'] == 'annulled') ? 'Annulled' : 'Not Applicable'))))) . "<br>";
                             //echo "Civil Status: " . $row['civil_status'] . "<br>";
@@ -348,8 +350,8 @@
 
                             echo "<h2>Employment Information</h2>";
                             if ($employeeStatus === 'resigned') {
-                                
-                                echo "<span style='color: red'> RESIGNED on " . $row['resignation_date'] . "</span><br>";
+                                $formattedResignationDate = date('F j, Y', strtotime($row['resignation_date']));
+                                echo "<span style='color: red'> RESIGNED on " . $formattedResignationDate . "</span><br>";
                                 echo "<span class='bold'>Employment Status: </span>";
                                 echo $row['employment_status'];
                             } else {
@@ -363,11 +365,9 @@
                             echo "<span class='bold'>Department: </span>" . $row['department'] . "<br>";
                             echo "<span class='bold'>Position: </span>" . (($row['position'] != "") ? $row['position'] : "Not Applicable") . "<br>";
                             //echo "Position: " . $row['position'] . "<br>";
-                            echo "<span class='bold'>Date Hired: </span>" . (($row['date_hired'] != "") ? $row['date_hired'] : "Not Applicable") . "<br>";
+                            $formattedDateHired = date('F j, Y', strtotime($row['date_hired']));
+                            echo "<span class='bold'>Date Hired: </span>" . (($row['date_hired'] != "") ? $formattedDateHired : "Not Applicable") . " (" . (($row['years_in_service'] != "") ? $row['years_in_service'] : "") . ")<br>";
                             
-                            //echo "Date Hired: " . $row['date_hired'] . "<br>";
-                            echo "<span class='bold'>Years in Service: </span>" . (($row['years_in_service'] != "") ? $row['years_in_service'] : "Not Applicable") . "<br>";
-                            //echo "Years in Service: " . $row['years_in_service'] . "<br>";
                             echo "</td><td>";
 
                             
@@ -380,7 +380,8 @@
                             //echo "Number of Units: " . $row['number_of_units'] . "<br>";
                             echo "<span class='bold'>PRC Number: </span>" . (($row['prc_number'] != "") ? $row['prc_number'] : "Not Applicable") . "<br>";
                             //echo "PRC Number: " . $row['prc_number'] . "<br>";
-                            echo "<span class='bold'>PRC Expiration: </span>" . (($row['prc_exp'] != "0000-00-00") ? $row['prc_exp'] : "Not Applicable") . "<br>";
+                            $formattedPRCExp = date('F j, Y', strtotime($row['date_hired']));
+                            echo "<span class='bold'>PRC Expiration: </span>" . (($row['prc_exp'] != "0000-00-00") ? $formattedPRCExp : "Not Applicable") . "<br>";
                             //echo "PRC Expiration: " . $row['prc_exp'] . "<br>";
                             echo "</td></tr><td>";
 
@@ -399,7 +400,14 @@
 
                             echo "<h2>Other Information</h2>";
                             if ($_SESSION['access_level'] == 'super admin') {
-                                echo "<span class='bold'>Salary: </span>" . (($row['date_hired'] != "") ? "18,000" : "Not Applicable") . "<br>";
+                                echo "<span class='bold'>Salary: </span>";
+                                if ($row['salary'] != 0) {
+                                    $formattedSalary = number_format($row['salary'], 0, '', ',');
+                                    echo "$formattedSalary";
+                                } else {
+                                    echo "Not Applicable";
+                                }
+                                echo "<br>";
                             }
                             echo "<span class='bold'>Tin: </span>" . (($row['tin'] != "") ? $row['tin'] : "Not Applicable") . "<br>";
                             //echo "TIN: " . $row['tin'] . "<br>";
@@ -495,6 +503,10 @@
             echo '<input type="hidden" name="employeeStatus" value="' . $employeeStatus . '">';
             if ($_SESSION['access_level'] != 'employee'){
             echo '<input type="submit" class="submit-button" name="delete" id="delete" value="Delete">';
+            }
+            if ($_SESSION['access_level'] == 'employee'){
+                echo '<a class="submit-button" href="request_emp.php?control=' . $user['control_number'] . '">' . 'Request</a>';
+                echo '<a class="submit-button" href="request_list_emp.php">' . 'My Requests</a>';
             }
             echo '</form>';
             echo "</div>";

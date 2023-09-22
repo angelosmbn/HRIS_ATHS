@@ -6,12 +6,23 @@
         header("Location: login_hris.php");
         exit();
     }
-
+    if ($_SESSION['access_level'] == 'employee') {
+        echo '<script>
+                alert("Invalid Access.");
+                window.location="information.php?control=' . $_SESSION['control_number'] . '";
+            </script>';
+        exit;
+    }
     include 'navbar_hris.php';
     change_default();
     
     if (isset($_GET['service_id'])) {
         $service_id = $_GET['service_id'];   
+    }else{
+        echo '<script>
+                alert("Please Select an Employee to Edit.");
+                window.location="cur_emp.php"
+            </script>';
     }
 
     $sql = "SELECT * FROM service_record WHERE service_id = ?";

@@ -6,6 +6,13 @@
         header("Location: login_hris.php");
         exit();
     }
+    if ($_SESSION['access_level'] == 'employee') {
+        echo '<script>
+                alert("Invalid Access.");
+                window.location="information.php?control=' . $_SESSION['control_number'] . '";
+            </script>';
+        exit;
+    }
     include 'navbar_hris.php';
     change_default();
     
@@ -25,6 +32,7 @@
         $classification = $_POST['classification'];
         $department = $_POST['department'];
         $date_hired = $_POST['date_hired'];
+        $salary = $_POST['salary'];
 
         $currentDate = date("Y-m-d");
         $years_service = date_diff(date_create($date_hired), date_create($currentDate))->y;
@@ -74,9 +82,9 @@
                 $stmt = $conn->prepare("INSERT INTO employees (control_number, surname, name, middle_name, suffix, birthday, age, civil_status, gender,
                                                                 employment_status, classification, date_hired, years_in_service, address, contact,
                                                                 email, course_taken, further_studies, number_of_units, prc_number, prc_exp,
-                                                                position, tin, sss, philhealth, pag_ibig, department)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->bind_param("ssssssisssssissssssssssssss", $control_number, $surname, $name, $middle_name, $suffix, $birthday, $age, $civil_status, $gender, $employment_status, $classification, $date_hired, $years_service, $address, $contact, $email, $course_taken, $further_studies, $number_units, $prc_number, $prc_exp, $position, $tin, $sss, $philhealth, $pagibig, $department);
+                                                                position, tin, sss, philhealth, pag_ibig, department, salary)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt->bind_param("ssssssisssssissssssssssssssd", $control_number, $surname, $name, $middle_name, $suffix, $birthday, $age, $civil_status, $gender, $employment_status, $classification, $date_hired, $years_service, $address, $contact, $email, $course_taken, $further_studies, $number_units, $prc_number, $prc_exp, $position, $tin, $sss, $philhealth, $pagibig, $department, $salary);
                 $stmt->execute();
                 $stmt->close();
 
@@ -176,6 +184,7 @@
             $employment_status = $row['employment_status'];
             $classification = $row['classification'];
             $date_hired = $row['date_hired'];
+            $salary = $row['salary'];
             $years_service = $row['years_in_service'];
             $address = $row['address'];
             $contact = $row['contact'];
@@ -296,6 +305,9 @@
         #th_2{
             width: 25%;
         }
+        #th_3{
+            width: 15%;
+        }
         #dates_th{
             width: 7%;
         }
@@ -311,7 +323,9 @@
         #thirty{
             width: 25%;
         }
-
+        #salary_th{
+            width: 10%;
+        }
 
         .submit-button {
         display: inline-block;
@@ -470,14 +484,14 @@
 
         <table>
         <tr>
+        <th id="salary_th"><label for="salary">Salary:</label></th>
         <th><label for="address">Address:</label>
-        <th id="th_2"><label for="contact">Contact Number:</label>
+        <th id="th_3"><label for="contact">Contact Number:</label>
         <th id="th_2"><label for="email">Email:</label><br>
         </tr>
 
         <tr>
-        
-        
+        <th><input type="text" name="salary" id="salary" value="<?php echo isset($salary) ? $salary : '' ?>"></th>
         <th><input type="address" name="address" id="address" maxlength="250" value="<?php echo isset($address) ? $address : '' ?>">
         <th><input type="text" name="contact" id="contact"  maxlength="11" minlength="11" value="<?php echo isset($contact) ? $contact : '' ?>" >
         <th><input type="email" name="email" id="email" maxlength="100" value="<?php echo isset($email) ? $email : '' ?>" ><br>
@@ -629,7 +643,7 @@
 
     // Function to disable input fields
     function disableInputFields() {
-        var inputFields = document.querySelectorAll('#control_number, #surname, #name, #middle_name, #birthday, #civil_status, #gender, #employment_status, #classification, #date_hired, #years_service, #address, #contact, #email, #course_taken, #further_studies, #number_units, #prc_number, #prc_exp, #position, #tin, #sss, #philhealth, #pagibig, #fileToUpload, #department ,#suffix');
+        var inputFields = document.querySelectorAll('#control_number, #surname, #name, #middle_name, #birthday, #civil_status, #gender, #employment_status, #classification, #date_hired, #years_service, #address, #contact, #email, #course_taken, #further_studies, #number_units, #prc_number, #prc_exp, #position, #tin, #sss, #philhealth, #pagibig, #fileToUpload, #department ,#suffix, #salary');
 
         inputFields.forEach(function(input) {
             input.disabled = true;
@@ -642,6 +656,5 @@
             disableInputFields();
         });
     <?php } ?>
-
 </script>
 </html>

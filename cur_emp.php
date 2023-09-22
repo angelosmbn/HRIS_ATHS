@@ -6,7 +6,13 @@ if (!isset($_SESSION['user'])) {
     header("Location: login_hris.php");
     exit();
 }
-
+if ($_SESSION['access_level'] == 'employee') {
+    echo '<script>
+            alert("Invalid Access.");
+            window.location="information.php?control=' . $_SESSION['control_number'] . '";
+        </script>';
+    exit;
+}
 // Include the navigation bar
 include 'navbar_hris.php';
 change_default();
@@ -354,34 +360,38 @@ change_default();
 
                             while($row = mysqli_fetch_assoc($result)) {
                                     echo "<tr data-row-id='row-$i'>";
-                                        echo "<td> $i </td>";
-                                        //echo "<td>{$row['vl']}</td>";
-                                        //echo "<td>{$row['sl']}</td>";
-                                        echo '<td><a href="information.php?control=' . $row['control_number'] . '">' . $row['control_number'] . '</a></td>';
-                                        echo "<td>{$row['surname']}</td>";
-                                        echo "<td>{$row['name']}</td>";
-                                        echo "<td>{$row['middle_name']}</td>";
-                                        echo "<td>{$row['suffix']}</td>";
-                                        echo "<td>{$row['birthday']}</td>";
-                                        echo "<td>{$row['civil_status']}</td>";
-                                        echo "<td>{$row['gender']}</td>";
-                                        echo "<td>{$row['employment_status']}</td>";
-                                        echo "<td>{$row['classification']}</td>";
-                                        echo "<td>{$row['date_hired']}</td>";
-                                        echo "<td>{$row['years_in_service']}</td>";
-                                        echo "<td>{$row['address']}</td>";
-                                        echo "<td>{$row['contact']}</td>";
-                                        echo "<td>{$row['email']}</td>";
-                                        echo "<td>{$row['course_taken']}</td>";
-                                        echo "<td>{$row['further_studies']}</td>";
-                                        echo "<td>{$row['number_of_units']}</td>";
-                                        echo "<td>{$row['prc_number']}</td>";
-                                        echo "<td>{$row['prc_exp']}</td>";
-                                        echo "<td>{$row['position']}</td>";
-                                        echo "<td>{$row['tin']}</td>";
-                                        echo "<td>{$row['sss']}</td>";
-                                        echo "<td>{$row['philhealth']}</td>";
-                                        echo "<td>{$row['pag_ibig']}</td>";
+                                    $birthday = $row['birthday'];
+                                    $formattedBirthday = date('M j, Y', strtotime($birthday));
+                                    $date_hired = $row['date_hired'];
+                                    $formattedDateHired = date('M j, Y', strtotime($date_hired));
+                                    $prc_exp = $row['prc_exp'];
+                                    $formattedPrcExp = date('M j, Y', strtotime($prc_exp));
+                                    echo "<td> $i </td>";
+                                    echo '<td><a href="information.php?control=' . $row['control_number'] . '">' . $row['control_number'] . '</a></td>';
+                                    echo "<td>{$row['surname']}</td>";
+                                    echo "<td>{$row['name']}</td>";
+                                    echo "<td>{$row['middle_name']}</td>";
+                                    echo "<td>{$row['suffix']}</td>";
+                                    echo "<td>$formattedBirthday</td>";//date
+                                    echo "<td>{$row['civil_status']}</td>";
+                                    echo "<td>{$row['gender']}</td>";
+                                    echo "<td>{$row['employment_status']}</td>";
+                                    echo "<td>{$row['classification']}</td>";
+                                    echo "<td>$formattedDateHired</td>";//date
+                                    echo "<td>{$row['years_in_service']}</td>";
+                                    echo "<td>{$row['address']}</td>";
+                                    echo "<td>{$row['contact']}</td>";
+                                    echo "<td>{$row['email']}</td>";
+                                    echo "<td>{$row['course_taken']}</td>";
+                                    echo "<td>{$row['further_studies']}</td>";
+                                    echo "<td>{$row['number_of_units']}</td>";
+                                    echo "<td>{$row['prc_number']}</td>";
+                                    echo "<td>$formattedPrcExp</td>";//date
+                                    echo "<td>{$row['position']}</td>";
+                                    echo "<td>{$row['tin']}</td>";
+                                    echo "<td>{$row['sss']}</td>";
+                                    echo "<td>{$row['philhealth']}</td>";
+                                    echo "<td>{$row['pag_ibig']}</td>";
                                     echo "</tr>";
                                 $i++;
                             }
