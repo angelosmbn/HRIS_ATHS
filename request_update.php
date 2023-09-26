@@ -1,7 +1,7 @@
 
 <?php
 session_start();
-function recent_request($admin_id, $employee_id, $type) {
+function recent_request($admin_id, $employee_id, $type, $requestId) {
     $conn = new mysqli('localhost', 'root', 'assumpta_hris', 'hris');
 
     //Get Admin Name
@@ -40,9 +40,20 @@ function recent_request($admin_id, $employee_id, $type) {
       $employee_name = "Unknown";
     }
 
-    $stmt = $conn->prepare("INSERT INTO recent_request (admin_id, employee_id, type, admin_name, employee_name)
-                            VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("sssss", $admin_id, $employee_id, $type, $admin_name, $employee_name);
+    $getReq = $conn->prepare("SELECT * FROM request WHERE request_id = ?");
+    $getReq->bind_param("i", $requestId);
+    $getReq->execute();
+    $result_req = $getReq->get_result();
+    if ($result_req->num_rows > 0){
+      $req = $result_req->fetch_assoc();
+      $request_name  = $req['req'];
+    }else{
+      $request_name="";
+    }
+    
+    $stmt = $conn->prepare("INSERT INTO recent_request (admin_id, employee_id, type, admin_name, employee_name, req)
+                            VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("ssssss", $admin_id, $employee_id, $type, $admin_name, $employee_name, $request_name);
     $stmt->execute();
     $stmt->close();
   }
@@ -77,7 +88,7 @@ if (isset($_POST['request_id']) && isset($_POST['status']) && isset($_POST['cont
         echo "Status updated successfully";
         // Add to recent request
         $type = ucfirst($status) . " Request";
-        recent_request($_SESSION['control_number'], $employee_id, $type);
+        recent_request($_SESSION['control_number'], $employee_id, $type, $requestId);
     } else {
         // Handle the error if the update fails
         echo "Error updating status: " . mysqli_error($conn);

@@ -217,7 +217,7 @@
                                 $stmt_user->close();
 
                                 if ($old_classification != $classification || $old_employment_status != $employment_status) {
-                                    updateSLVL($conn, $new_control_number, $employment_status, $classification);
+                                    updateSLVL($new_control_number, $employment_status, $classification);
                                 }
 
                                 $success_message = "Information Successfully Updated";

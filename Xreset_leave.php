@@ -15,14 +15,14 @@ if ($_SESSION['access_level'] == 'super admin') {
     $sql = "SELECT * FROM employees WHERE status = 'active'";
     $result = $conn->query($sql);
 
-    $updateSql = "UPDATE employees SET remaining_leave WHERE control_number = ?";
+    $updateSql = "UPDATE employees SET remaining_leave = ? WHERE control_number = ?";
     $updateStmt = $conn->prepare($updateSql);
 
     while ($row = mysqli_fetch_assoc($result)) {
         $control_number = $row['control_number'];
         $sl = 0;
         $vl = 0;
-
+        $remainingLeave = 0;
         if ($row['classification'] == 'Rank and File (Faculty)' && $row['employment_status'] == 'Permanent') {
             $sl = 10;
         }
@@ -51,8 +51,8 @@ if ($_SESSION['access_level'] == 'super admin') {
         elseif ($row['classification'] == 'Auxiliary' && $row['employment_status'] == 'Probationary') {
             $sl = 5;
         }
-
-        $updateStmt->bind_param("iis", $sl, $vl, $control_number);
+        $remainingLeave = $sl + $vl;
+        $updateStmt->bind_param("ds", $remainingLeave, $control_number);
         $updateStmt->execute();
     }
 

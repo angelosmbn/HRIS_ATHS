@@ -1,0 +1,2 @@
+RewriteEngine on
+RewriteRule ^aths/hris/home?$ /HRIS_ATHS/Admin_home_hris.php

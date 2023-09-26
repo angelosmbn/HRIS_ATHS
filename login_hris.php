@@ -57,15 +57,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         $result = mysqli_query($conn, $query);
                         if ($result) {
                             $row = mysqli_fetch_assoc($result);
-                            $status = isset($row['status']) ? $row['status'] : "resigned";
+                            $status = isset($row['status']) ? $row['status'] : "disabled";
                             mysqli_free_result($result);
                         }
                         else {
                             echo "Error: " . $query . "<br>" . mysqli_error($conn);
                         }
-                        $error_message = 'Invalid username or password. Please try again.';
-                        if ($status == "resigned" && isset($row['status'])) {
-                            $error_message = 'This account is resigned. Please contact the administrator.';
+                        $error_message = 'Invalid username or password1. Please try again.';
+                        if ($status == "disabled" && isset($row['status'])) {
+                            $error_message = 'This account is disabled.';
                         }
                     }
                 }

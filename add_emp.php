@@ -97,7 +97,7 @@
                 $stmt->execute();
                 $stmt->close();
                 
-                updateSLVL($conn, $control_number, $employment_status, $classification);
+                updateSLVL($control_number, $employment_status, $classification);
 
                 $success_message = "Successfully added employee.";
 

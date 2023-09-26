@@ -210,16 +210,6 @@
             
         }
 
-        .name { //!unused 
-            font-size: 0px;
-        }
-
-        .details { //!unused
-            font-size: 16px;
-            margin-top: 20px;
-            text-align: center;
-        }
-
         .submit-button {
             display: inline-block;
             padding: 10px 20px;
@@ -333,7 +323,7 @@
                             $formattedBirthday = date('F j, Y', strtotime($row['birthday']));
                             echo "<span class='bold'>Birthday: </span>" . $formattedBirthday . " (" . $row['age'] . ")" ."<br>";
                             //echo "age: " . $row['age'];
-                            echo "<span class='bold'> Civil Status: </span>" . (($row['civil_status'] == 'single') ? 'Single' : (($row['civil_status'] == 'married') ? 'Married' : (($row['civil_status'] == 'widowed') ? 'Widowed' : (($row['civil_status'] == 'separated') ? 'Separated' : (($row['civil_status'] == 'annulled') ? 'Annulled' : 'Not Applicable'))))) . "<br>";
+                            echo "<span class='bold'> Civil Status: </span>" . (($row['civil_status'] == 'Single') ? 'Single' : (($row['civil_status'] == 'Married') ? 'Married' : (($row['civil_status'] == 'Widowed') ? 'Widowed' : 'Not Applicable'))) . "<br>";
                             //echo "Civil Status: " . $row['civil_status'] . "<br>";
                             
                             echo "<span class='bold'>Gender: </span>" . $row['gender'] . "<br>";

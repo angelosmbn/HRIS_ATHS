@@ -6,6 +6,21 @@ if (!isset($_SESSION['user'])) {
 }
 define('MY_TIMEZONE', 'Asia/Manila');
 $timezone = new DateTimeZone(MY_TIMEZONE);
+
+if ($_SESSION['access_level'] == 'employee') {
+  $inactive_timeout = 300; // 5mins
+  if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $inactive_timeout)) {
+      session_unset(); // Unset all session variables
+      session_destroy(); // Destroy the session
+      setcookie("user_id", "", time() - 3600, "/"); // Remove the user ID cookie
+      setcookie("user_token", "", time() - 3600, "/"); // Remove the user token cookie
+      header("Location: login_hris.php"); // Redirect to the login page
+      exit();
+  }
+
+  // Update the user's last activity timestamp
+  $_SESSION['last_activity'] = time();
+}
 ?>
 
 <?php 
@@ -150,7 +165,8 @@ $timezone = new DateTimeZone(MY_TIMEZONE);
     
   }
 
-  function updateSLVL($conn, $control_number, $employment_status, $classification) {
+  function updateSLVL($control_number, $employment_status, $classification) {
+    $conn = new mysqli('localhost', 'root', 'assumpta_hris', 'hris');
     $sl = 0;
     $vl = 0;
     
@@ -183,9 +199,11 @@ $timezone = new DateTimeZone(MY_TIMEZONE);
       $sl = 5;
     }
 
-    $sql = "UPDATE employees SET sl=?, vl=? WHERE control_number=?";
+    $remaining_leave = $sl+$vl;
+    $sql = "UPDATE employees SET sl=?, vl=?, remaining_leave=? WHERE control_number=?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("iis", $sl, $vl, $control_number);
+    $stmt->bind_param("iids", $sl, $vl, $remaining_leave, $control_number);
+    $stmt->execute();
   }
 
 ?>
