@@ -217,7 +217,7 @@
                                 $stmt_user->close();
 
                                 if ($old_classification != $classification || $old_employment_status != $employment_status) {
-                                    updateSLVL($conn, $new_control_number, $employment_status, $classification);
+                                    updateSLVL($new_control_number, $employment_status, $classification);
                                 }
 
                                 $success_message = "Information Successfully Updated";
@@ -354,9 +354,11 @@
                             $stmt->close();
                             
                             // Delete the existing image file from the server if it exists
-                            if ($oldImageFilename && file_exists($path . $oldImageFilename)) {
-                                unlink($path . $oldImageFilename);
-                            }
+			    if ($oldImageFilename != "default.jpg") {
+                            	if ($oldImageFilename && file_exists($path . $oldImageFilename)) {
+                                     unlink($path . $oldImageFilename);
+                            	}
+			    }
                             
                             // Upload the new image file
                             $status = move_uploaded_file($_FILES['fileToUpload']['tmp_name'], $path . $uniqueFilename);

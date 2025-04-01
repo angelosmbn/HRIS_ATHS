@@ -6,6 +6,21 @@ if (!isset($_SESSION['user'])) {
 }
 define('MY_TIMEZONE', 'Asia/Manila');
 $timezone = new DateTimeZone(MY_TIMEZONE);
+
+if ($_SESSION['access_level'] == 'employee') {
+  $inactive_timeout = 300; // 5mins
+  if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $inactive_timeout)) {
+      session_unset(); // Unset all session variables
+      session_destroy(); // Destroy the session
+      setcookie("user_id", "", time() - 3600, "/"); // Remove the user ID cookie
+      setcookie("user_token", "", time() - 3600, "/"); // Remove the user token cookie
+      header("Location: login_hris.php"); // Redirect to the login page
+      exit();
+  }
+
+  // Update the user's last activity timestamp
+  $_SESSION['last_activity'] = time();
+}
 ?>
 
 <?php 
@@ -150,7 +165,8 @@ $timezone = new DateTimeZone(MY_TIMEZONE);
     
   }
 
-  function updateSLVL($conn, $control_number, $employment_status, $classification) {
+  function updateSLVL($control_number, $employment_status, $classification) {
+    $conn = new mysqli('localhost', 'root', 'assumpta_hris', 'hris');
     $sl = 0;
     $vl = 0;
     
@@ -176,16 +192,18 @@ $timezone = new DateTimeZone(MY_TIMEZONE);
       $vl = 10;
     }
     elseif ($classification == 'Auxiliary' && $employment_status == 'Permanent') {
-      $sl = 10;
+      $sl = 5;
       $vl = 5;
     }
     elseif ($classification == 'Auxiliary' && $employment_status == 'Probationary') {
       $sl = 5;
     }
 
-    $sql = "UPDATE employees SET sl=?, vl=? WHERE control_number=?";
+    $remaining_leave = $sl+$vl;
+    $sql = "UPDATE employees SET sl=?, vl=?, remaining_leave=? WHERE control_number=?";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("iis", $sl, $vl, $control_number);
+    $stmt->bind_param("iids", $sl, $vl, $remaining_leave, $control_number);
+    $stmt->execute();
   }
 
 ?>
@@ -207,7 +225,7 @@ $timezone = new DateTimeZone(MY_TIMEZONE);
         padding: 0;
         box-sizing: border-box;
         font-family: 'Poppins', sans-serif;
-        display: relative;
+        display: relative; 
         z-index: 1;
         }
         .sidebar{
@@ -322,7 +340,7 @@ $timezone = new DateTimeZone(MY_TIMEZONE);
         transition: all 0.4s ease;
         }
         .sidebar.close .nav-links li a .link_name{
-        opacity: 0;
+        display: none;
         pointer-events: none;
         }
         .sidebar .nav-links li .sub-menu{
@@ -364,7 +382,7 @@ $timezone = new DateTimeZone(MY_TIMEZONE);
         transition: all 0.4s ease;
         }
         .sidebar .nav-links li .sub-menu .link_name{
-        display: none;
+          display: block;
         }
         .sidebar.close .nav-links li .sub-menu .link_name{
         font-size: 18px;
@@ -523,10 +541,10 @@ $timezone = new DateTimeZone(MY_TIMEZONE);
         <a href="Admin_home_hris.php">
           <!--<i class='bx bx-grid-alt' ></i>-->
           <i class="fa-solid fa-border-all" style="color: #d6d6d6;"></i>
-          <span class="link_name">Dashboard</span>
+          <span class="link_name">Dashboard1</span>
         </a>
         <ul class="sub-menu blank">
-          <li><a class="link_name" href="#">Dashboard</a></li>
+          <li><a class="link_name" href="#">Dashboard2</a></li>
         </ul>
       </li>
       <li>

@@ -3,10 +3,10 @@ cd "C:\xampp\mysql\bin"
 
 rem credentials to connect to mysql server
 set mysql_user=root
-set mysql_password=
+set mysql_password=assumpta_hris
 
 rem backup file name generation
-set backup_path=C:\Users\Limits\Documents\DB BACKUP
+set backup_path=C:\Users\Ms Alou\Documents\HRIS DB BACKUP
 set backup_name=hris
 rem backup creation
 mysqldump --user=%mysql_user% --password=%mysql_password% --all-databases --routines --events --result-file="%backup_path%\%backup_name%.sql"

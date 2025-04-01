@@ -367,18 +367,27 @@ if (isset($_POST['updateAttendance'])) {
         #cancel:hover {
             background-color: #9c0402;
         }
-        
+
+
+        .search-bar tr td{
+            border: none;
+        }
+
+        .search-bar {
+            margin-left: 50px;
+        }
+
     </style>
     
 </head>
 <body>
     <div class="home-section">
         <div class="home-content">
-        <form class="form1" action="" method="POST">
+        <form class="form" action="" method="POST">
             <input type="hidden" name="previous_school_year" value="<?php echo isset($_POST['school_year']) ? $_POST['school_year'] : ''; ?>">
             <table class="search-bar">
             <tr>
-            <td colspan="2" rowspan="2"><h1>Attendance</h1></td>
+            <td colspan="2" rowspan="2"><h1>Attendancee</h1></td>
             <td><td></td></td>
             <td><td></td></td>
             <td><td></td></td>

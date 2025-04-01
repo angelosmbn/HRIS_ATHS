@@ -145,9 +145,8 @@
                         </tr>
                         <tr>";
                         //echo "<a href='increment_years.php'>Increment Years of Service</a><br>";
-                        echo '<th><button id="reset_leave" onclick="deleteAttendanceRecordConfirmation()">Delete All Attendance Record</button>';
-                        echo '<th></th>';
-                        echo '<th><button id="reset_leave" onclick="resetLeaveConfirmation()">Reset Leave Credits</button><br>';
+                        echo '<th colspan="3"><button id="reset_leave" onclick="deleteAttendanceRecordConfirmation()">Delete All Attendance Record</button></th>';
+                        echo '<br>';
                         
                     }
                 ?>
@@ -163,24 +162,6 @@
         ?>
     }
 
-    function resetLeaveConfirmation() {
-        if (confirm("Are you sure you want to reset leave credits?")) {
-            var input = prompt("To confirm, type 'RESET LEAVE'");
-            
-            if (input === null) {
-                // User canceled the input
-                alert("Leave credits will not be reset.");
-            } else if (input.trim() === "RESET LEAVE") {
-                // User confirmed and provided the correct input
-                window.location.href = "reset_leave.php"; // Replace with the actual file name or URL to perform the leave reset
-                alert("Successfully Reset Leave Credits.");
-            } else {
-                alert("Wrong Input. Leave credits will not be reset.");
-            }
-        } else {
-            alert("Leave credits will not be reset.");
-        }
-    }
     function deleteAttendanceRecordConfirmation() {
         if (confirm("Are you sure you want to delete attendance recrod?")) {
             var input = prompt("To confirm, type 'DELETE ATTENDANCE RECORD'");

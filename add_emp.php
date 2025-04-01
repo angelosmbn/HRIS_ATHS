@@ -97,7 +97,7 @@
                 $stmt->execute();
                 $stmt->close();
                 
-                updateSLVL($conn, $control_number, $employment_status, $classification);
+                updateSLVL($control_number, $employment_status, $classification);
 
                 $success_message = "Successfully added employee.";
 
@@ -121,37 +121,38 @@
                     $stmt->close();
                     
                     // Delete the existing image file from the server if it exists
-                    if ($oldImageFilename && file_exists($path . $oldImageFilename)) {
-                        unlink($path . $oldImageFilename);
-                    }
-                    
-                    // Upload the new image file
-                    $status = move_uploaded_file($_FILES['fileToUpload']['tmp_name'], $path . $uniqueFilename);
-                    
-                    if ($status) {
-                        if ($conn->connect_error) {
-                            $error_message = 'Unable to connect to the database. Please try again later.';
-                            die("Connection failed: " . $conn->connect_error);
-                        } else {
-                            $stmt = $conn->prepare("UPDATE employees SET image = ? WHERE control_number = ?");
-                            $stmt->bind_param("ss", $uniqueFilename, $control_number);
-                            $stmt->execute();
-                            $stmt->close();
-        
-                            if (isset($type)){
-                                $type .= ", Profile Uploaded";
+                    if ($oldImageFilename != "default.jpg") {
+                                if ($oldImageFilename && file_exists($path . $oldImageFilename)) {
+                                    unlink($path . $oldImageFilename);
+                                }
                             }
-                            else{
-                                $type = "Profile Uploaded";
-                            }
-
-                            $stmt = $conn->prepare("UPDATE user SET image = ? WHERE control_number = ?");
-                            $stmt->bind_param("ss", $uniqueFilename, $control_number);
-                            $stmt->execute();
-                            $stmt->close();
+                            // Upload the new image file
+                            $status = move_uploaded_file($_FILES['fileToUpload']['tmp_name'], $path . $uniqueFilename);
                             
-                        }
-                    }
+                            if ($status) {
+                                if ($conn->connect_error) {
+                                    $error_message = 'Unable to connect to the database. Please try again later.';
+                                    die("Connection failed: " . $conn->connect_error);
+                                } else {
+                                    $stmt = $conn->prepare("UPDATE employees SET image = ? WHERE control_number = ?");
+                                    $stmt->bind_param("ss", $uniqueFilename, $control_number);
+                                    $stmt->execute();
+                                    $stmt->close();
+                
+                                    if (isset($type)){
+                                        $type .= ", Profile Uploaded";
+                                    }
+                                    else{
+                                        $type = "Profile Uploaded";
+                                    }
+
+                                    $stmt = $conn->prepare("UPDATE user SET image = ? WHERE control_number = ?");
+                                    $stmt->bind_param("ss", $uniqueFilename, $control_number);
+                                    $stmt->execute();
+                                    $stmt->close();
+                                    
+                                }
+                            }
                 }
                 if (isset($type)){
                     history($_SESSION['control_number'], $control_number, $type);

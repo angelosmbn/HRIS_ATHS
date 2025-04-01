@@ -5,7 +5,8 @@
         header("Location: login_hris.php");
         exit();
     }
-    $conn = new mysqli('localhost', 'root', '', 'hris');
+
+    $conn = new mysqli('localhost', 'root', 'assumpta_hris', 'hris');
     $user = isset($_SESSION['user']) ? $_SESSION['user'] : null;
     $name = ""; // Initialize the variable
     $surname = $user['surname'];
