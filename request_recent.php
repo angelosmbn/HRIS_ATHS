@@ -210,7 +210,7 @@ change_default();
             <th>Admin Name</th>
             <th>Employee ID</th>
             <th>Employee Name</th>
-            <th>Request</th>
+            <!-- <th>Request</th> -->
             <th>Type</th>
             <th>Timestamp</th>
             </tr>
@@ -282,7 +282,7 @@ change_default();
                         echo "<td>{$row['admin_name']}</td>";
                         echo "<td>{$row['employee_id']}</td>";
                         echo "<td>{$row['employee_name']}</td>";
-                        echo "<td>{$row['req']}</td>";
+                        // echo "<td>{$row['req']}</td>";
                         echo "<td>{$row['type']}</td>";
                         echo "<td>" . date('M j, Y \a\t g:i a', strtotime($row['timestamp'])) . "</td>";
                         echo "</tr>";
